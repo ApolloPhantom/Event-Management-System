@@ -1,0 +1,176 @@
+{% extends "layout.html" %}
+
+{% block title %} 
+Organizer Registration 
+{%endblock%}
+
+{% block style %}
+<style>
+    .input-error {
+        border: 1px solid transparent; /* Remove default border */
+        box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.5); /* Add red shadow */
+        background-color: pink;
+    }
+    .input-success {
+        border: 1px solid transparent; /* Remove default border */
+        box-shadow: 0 0 0 3px green; /* Add red shadow */
+        background-color: lightgreen;
+    }
+    .input::placeholder {
+        color: gray;
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+<nav class="bg-gray-800">
+    <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+      <div class="relative flex h-16 items-center justify-between">
+        <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
+          <button type="button" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+            <svg class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+          <div class="flex flex-shrink-0 items-center">
+            <img class="h-8 w-auto" src="/static/layers.png" alt="Your Company">
+          </div>
+          <div class="hidden sm:ml-6 sm:block">
+            <div class="flex space-x-4">
+              <a href="/O_register" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Registration</a>
+              <a href="/O_login" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Login</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+<div class="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
+	<div class="relative py-3 sm:max-w-xl sm:mx-auto">
+		<div
+			class="absolute inset-0 bg-gradient-to-r from-blue-300 to-blue-600 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl">
+		</div>
+		<div class="relative px-100 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
+			<div class="max-w-md mx-auto">
+				<div>
+					<h1 class="text-2xl font-semibold">Organizer Registration</h1>
+				</div>
+				<div class="divide-y divide-gray-200">
+          <form id="registrationForm">
+					<div class="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
+						<div class="relative">
+                            <h1>Name</h1>
+							<input autocomplete="off" id="name" name="name" type="text" class="input is-rounded has-text-black" />
+						</div>
+						<div class="relative">
+                            <h1>Password</h1>
+							<input autocomplete="off" id="password" name="password" type="password" class="input is-rounded has-text-black"/>
+						</div>
+                        <div class="relative">
+                            <h1>Password Again</h1>
+							<input autocomplete="off" id="password1" name="password1" type="password" class="input is-rounded has-text-black"/>
+						</div>
+                        <div class="relative">
+                            <h1>Security Key</h1>
+							<input autocomplete="off" id="s_key" name="s_key" type="password" class="input is-rounded has-text-black"/>
+						</div>
+						<div class="relative">
+							<button class="bg-blue-500 text-white rounded-md px-2 py-1" id="submitBtn" type="button">Register</button>
+						</div>
+					</div>
+            <article class="message" id="message" style="display: none;">
+                <div class="message-header">
+                    <p id="result1"></p>
+                </div>
+                <div class="message-body">
+                    <h1 id="result"></h1>
+                </div>
+            </article>
+            </form>
+          </div>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+    document.getElementById('submitBtn').addEventListener('click', function() {
+        let name = document.getElementById('name').value;
+        let password = document.getElementById('password').value;
+        let password1 = document.getElementById('password1').value;
+        let s_key = document.getElementById('s_key').value;
+
+        // Check if any field is empty
+        if (name === '' || password === '' || s_key === ''|| password1==='') {
+            // Add is-warning class to empty fields
+            document.getElementById('name').classList.toggle('input-error', name === '');
+            document.getElementById('password').classList.toggle('input-error', password === '');
+            document.getElementById('password1').classList.toggle('input-error', password1 === '');
+            document.getElementById('s_key').classList.toggle('input-error', s_key === '');
+            document.getElementById('result').innerText = "Input Fields are empty";
+            document.getElementById('result1').innerText = "Error";
+            document.getElementById('message').classList.toggle('is-danger',name==='');
+            document.getElementById('message').classList.toggle('is-danger',password==='');
+            document.getElementById('message').classList.toggle('is-danger',password1==='');
+            document.getElementById('message').classList.toggle('is-danger',s_key==='');
+            document.getElementById('message').style.display = 'block';
+            return; // Do not proceed if any field is empty
+        }
+        else if (password!==password1){
+          // Add is-warning class to mismatched fields
+          document.getElementById('name').classList.toggle('input-error',password!==password1);
+          document.getElementById('password').classList.toggle('input-error', password!==password1);
+          document.getElementById('password1').classList.toggle('input-error', password!==password1);
+          document.getElementById('s_key').classList.toggle('input-error', password!==password1);
+          document.getElementById('result').innerText = "Passwords do not match.";
+          document.getElementById('result1').innerText = "Error";
+          document.getElementById('message').classList.toggle('is-danger',password!==password1);
+          document.getElementById('message').style.display = 'block';
+          return;
+        }
+
+        // If all fields are filled, send data to Flask backend
+        let formData = new FormData();
+        formData.append('name', name);
+        formData.append('password', password);
+        formData.append('password1', password1);
+        formData.append('s_key', s_key);
+
+        fetch('/O_register', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(data => {
+          if(data!==""){
+            document.getElementById('name').classList.toggle('input-success', data!=="");
+            document.getElementById('password').classList.toggle('input-success', data!=="");
+            document.getElementById('password1').classList.toggle('input-success',data!=="");
+            document.getElementById('s_key').classList.toggle('input-success', data!=="");
+            document.getElementById('result').innerText = `Your O_ID is ${data}. This page will go to dashboard after 5 secs.`;
+            document.getElementById('message').style.display = 'block';
+            document.getElementById('result1').innerText = "Success";
+            document.getElementById('message').classList.remove("is-danger");
+            document.getElementById('message').classList.add("is-success");
+            setTimeout(function(){
+                window.location.href = "/O_home";
+            },5000);
+          }
+          else{
+            document.getElementById('name').classList.toggle('input-error', data==="");
+            document.getElementById('password').classList.toggle('input-error', data==="");
+            document.getElementById('password1').classList.toggle('input-error', data==="");
+            document.getElementById('s_key').classList.toggle('input-error', data==="");
+            document.getElementById('result').innerText = "Error";
+            document.getElementById('message').style.display = 'block';
+            document.getElementById('result1').innerText = "Error";
+            document.getElementById('message').classList.add("is-danger");
+            document.getElementById('message').classList.remove("is-success");
+
+          }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+</script>
+{% endblock %}

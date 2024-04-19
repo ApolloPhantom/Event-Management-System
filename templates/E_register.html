@@ -1,0 +1,154 @@
+{% extends "layout.html" %}
+
+{% block title %} 
+Event Registration 
+{%endblock%}
+
+{% block style%}
+{% endblock %}
+
+{% block main %}
+<nav class="bg-blue-800">
+  <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+    <div class="relative flex h-16 items-center justify-between">
+      <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
+        <button type="button" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+          <svg class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+        <div class="flex flex-shrink-0 items-center">
+          <img class="h-8 w-auto" src="/static/layers.png" alt="Your Company">
+        </div>
+        <div class="hidden sm:ml-6 sm:block">
+          <div class="flex space-x-4">
+            <a href="/E_register" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Event Registration</a>
+            <a href="/V_register" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Venue Registration</a>
+            <a href="/E_schedule" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Event Schedule</a>
+            <a href="/B_dash" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Budget Dashboard</a>
+            <a href="/O_logout" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Logout</a>
+            <a href="/O_change" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Change Password</a>
+            <a href="/" class="absolute right-0 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Public Access</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="min-h-screen p-6 bg-gray-100 flex items-center justify-center">
+  <div class="container max-w-screen-lg mx-auto">
+    <div>
+      <h2 class="font-semibold text-xl text-gray-600">Event Registration</h2>
+      <p class="text-gray-500 mb-6">Proceed with caution, once created cannot be deleted.</p>
+      <div class="bg-white rounded shadow-lg p-4 px-4 md:p-8 mb-6">
+        <div class="grid gap-4 gap-y-2 text-sm grid-cols-1 lg:grid-cols-3">
+          <div class="text-gray-600">
+            <p class="font-medium text-lg">Event Details</p>
+            <p>Please fill out all the fields.</p>
+          </div>
+          <div class="lg:col-span-2">
+            <form id="registrationForm">
+              <div class="grid gap-4 gap-y-2 text-sm grid-cols-1 md:grid-cols-5">
+                <div class="md:col-span-5">
+                  <label for="full_name">Event Name</label>
+                  <input type="text" name="e_name" id="e_name" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" value="" />
+                </div>
+                <div class="md:col-span-5">
+                  <label for="start_date">Start Date</label>
+                  <input type="date" name="start_date" id="start_date" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" value="" />
+                </div>
+                <div class="md:col-span-5">
+                  <label for="end_date">End Date</label>
+                  <input type="date" name="end_date" id="end_date" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" value="" />
+                </div>
+                <div class="md:col-span-5">
+                  <label for="host_dept">Hosting Department</label>
+                  <input type="text" name="host_dept" id="host_dept" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" value="" />
+                </div>
+                <div class="md:col-span-5">
+                  <label for="schedule">Number of Schedules</label>
+                  <input type="number" name="schedule" id="schedule" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" value="" />
+                </div>
+                <div class="md:col-span-5">
+                  <label for="s_cap">Starting Capital</label>
+                  <input type="number" name="s_cap" id="s_cap" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" value="" />
+                </div>
+                <div class="md:col-span-5">
+                  <label for="venue">Venue</label>
+                  <select name="venue" id="venue" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50">
+                      {% for option in options %}
+                          <option value="{{ option[0] }}">Name:-{{ option[1] }} Rent:-{{ option[3] }} Capacity:-{{ option[4] }}</option>
+                      {% endfor %}
+                  </select>
+                </div>               
+                <div class="md:col-span-5 text-right">
+                  <div class="inline-flex items-end">
+                    <button id="submitBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Submit</button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.getElementById('submitBtn').addEventListener('click', function(){
+    event.preventDefault();
+    let value = ["e_name","start_date","end_date","host_dept","schedule","s_cap","venue"];
+    let isError = false;
+    for (let i = 0; i < value.length; i++) {
+      let fieldId = value[i];
+      if (fieldId === 'file') {
+          if (document.getElementById(fieldId).files.length <= 0) {
+              alert("Empty File");
+              isError = true;
+              break;
+          }
+      } else {
+          // Check if other input fields are empty
+          if (document.getElementById(fieldId).value === '') {
+              alert("Empty Fields");
+              isError = true;
+              break;
+          }
+      }
+    }
+    if (!isError) {
+      let formData = new FormData();
+      formData.append("e_name",document.getElementById(value[0]).value);
+      formData.append("start_date",document.getElementById(value[1]).value);
+      formData.append("end_date",document.getElementById(value[2]).value);
+      formData.append("host_dept",document.getElementById(value[3]).value);
+      formData.append("schedule",document.getElementById(value[4]).value);
+      formData.append("s_cap",document.getElementById(value[5]).value);
+      formData.append('venue',document.getElementById(value[7]).value);
+
+      fetch('/E_register',{
+        method:'POST',
+        body: formData
+      })
+      .then(response => response.text())
+      .then(data => {
+      if(data!==''){
+        alert("Success,reload after 5s");
+        setTimeout(function(){
+          window.location.href = "/E_register";
+       },5000);
+      }
+      else{
+        alert("Server side Error,reload after 5s");
+        setTimeout(function(){
+          window.location.href = "/E_register";
+        },5000);
+      }
+      })
+      .catch(error => console.log('Error:', error));
+    }
+  });
+</script>
+{% endblock %}

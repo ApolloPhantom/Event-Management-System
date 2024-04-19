@@ -1,0 +1,114 @@
+{% extends "layout.html" %}
+
+{% block title %} 
+Budget Creation 
+{%endblock%}
+
+{% block style%}
+{% endblock %}
+
+{% block main %}
+<nav class="bg-red-800">
+    <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+      <div class="relative flex h-16 items-center justify-between">
+        <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
+          <button type="button" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+            <svg class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+          <div class="flex flex-shrink-0 items-center">
+            <img class="h-8 w-auto" src="/static/budget.png" alt="Your Company">
+          </div>
+          <div class="hidden sm:ml-6 sm:block">
+            <div class="flex space-x-4">
+              <a href="/O_home" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Organizer Dash</a>
+              <a href="/B_create" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Budget Creation</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</nav>
+<div class="min-h-screen p-6 bg-gray-100 flex items-center justify-center">
+    <div class="container max-w-screen-lg mx-auto">
+      <div>
+        <h2 class="font-semibold text-xl text-gray-600">Budget Creation</h2>
+        <p class="text-gray-500 mb-6">Proceed with caution, once created cannot be deleted.</p>
+        <div class="bg-white rounded shadow-lg p-4 px-4 md:p-8 mb-6">
+          <div class="grid gap-4 gap-y-2 text-sm grid-cols-1 lg:grid-cols-3">
+            <div class="text-gray-600">
+              <p class="font-medium text-lg">Budget Details</p>
+              <p>Please fill out all the fields.</p>
+            </div>
+            <div class="lg:col-span-2">
+              <div class="grid gap-4 gap-y-2 text-sm grid-cols-1 md:grid-cols-5">
+                <div class="md:col-span-5">
+                  <label for="event">Event_ID</label>
+                  <select name="event" id="event" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50">
+                      {% for option in options %}
+                          <option value="{{ option[0] }}">Name:-{{ option[1] }}</option>
+                      {% endfor %}
+                  </select>
+                </div>
+                <div class="md:col-span-5">
+                  <label for="full_name">Amount:-</label>
+                  <input type="number" name="a_req" id="a_req" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" value="" />
+                </div>
+                <div class="md:col-span-5 text-right">
+                  <div class="inline-flex items-end">
+                    <button id="submitBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Submit</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.getElementById('submitBtn').addEventListener('click', function(){
+      event.preventDefault();
+      let value = ["event","a_req"];
+      let isError = false;
+      for (let i = 0; i < value.length; i++) {
+        let fieldId = value[i]; 
+        if (document.getElementById(fieldId).value === '') {
+            alert("Empty Fields");
+            isError = true;
+            break;
+        }
+      }
+      if (!isError) {
+        let formData = new FormData();
+        for (let i = 0; i < value.length; i++) {
+          let fieldId = value[i]; 
+          formData.append(fieldId,document.getElementById(fieldId).value);
+        }
+        fetch('/B_create',{
+          method:'POST',
+          body: formData
+        })
+        .then(response => response.text())
+        .then(data => {
+        if(data!==''){
+          alert("Success,reload after 5s");
+          setTimeout(function(){
+            window.location.href = "/B_create";
+         },5000);
+        }
+        else{
+          alert("Server side Error,reload after 5s");
+          setTimeout(function(){
+            window.location.href = "/B_create";
+          },5000);
+        }
+        })
+        .catch(error => console.log('Error:', error));
+      }
+    });
+  </script>
+  {% endblock %}

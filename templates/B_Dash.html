@@ -1,0 +1,94 @@
+{% extends "layout.html" %}
+
+{% block title %} 
+Budget Dashboard
+{%endblock%}
+
+{% block style%}
+{% endblock %}
+
+{% block main %}
+<nav class="bg-red-800">
+    <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+      <div class="relative flex h-16 items-center justify-between">
+        <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
+          <button type="button" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+            <svg class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+          <div class="flex flex-shrink-0 items-center">
+            <img class="h-8 w-auto" src="/static/budget.png" alt="Your Company">
+          </div>
+          <div class="hidden sm:ml-6 sm:block">
+            <div class="flex space-x-4">
+              <a href="/O_home" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Organizer Dash</a>
+              <a href="/B_create" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Budget Creation</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</nav>
+<section class="relative min-h-screen flex flex-col justify-center bg-slate-50 overflow-hidden">
+    <!-- <div class="w-full max-w-6xl mx-auto px-4 md:px-6 py-24">
+        <div class="flex flex-col justify-center divide-y divide-slate-200 [&>*]:py-16">
+            <div class="w-full max-w-3xl mx-auto">
+                <div class="-my-6">
+                    <div class="relative pl-8 sm:pl-32 py-6 group">
+                        <div class="font-medium text-indigo-500 mb-1 sm:mb-0">The origin</div>
+                        <div class="flex flex-col sm:flex-row items-start mb-1 group-last:before:hidden before:absolute before:left-2 sm:before:left-0 before:h-full before:px-px before:bg-slate-300 sm:before:ml-[6.5rem] before:self-start before:-translate-x-1/2 before:translate-y-3 after:absolute after:left-2 sm:after:left-0 after:w-2 after:h-2 after:bg-indigo-600 after:border-4 after:box-content after:border-slate-50 after:rounded-full sm:after:ml-[6.5rem] after:-translate-x-1/2 after:translate-y-1.5">
+                            <time class="sm:absolute left-0 translate-y-0.5 inline-flex items-center justify-center text-xs font-semibold uppercase w-20 h-6 mb-3 sm:mb-0 text-emerald-600 bg-emerald-100 rounded-full">May, 2020</time>
+                            <div class="text-xl font-bold text-slate-900">Acme was founded in Milan, Italy</div>
+                        </div>
+                        <div class="text-slate-500">Pretium lectus quam id leo. Urna et pharetra pharetra massa massa. Adipiscing enim eu neque aliquam vestibulum morbi blandit cursus risus.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> -->
+    <div class="w-full max-w-6xl mx-auto px-4 md:px-6 py-24">
+      <div class="flex flex-col justify-center divide-y divide-slate-200 [&>*]:py-16">
+          <div class="w-full max-w-3xl mx-auto">
+              <!-- Vertical Timeline #1 -->
+              <div class="-my-6">
+                  <!-- Budget Items -->
+                  {% for row in budget_data %}
+                  <div class="relative pl-8 sm:pl-32 py-6 group">
+                      <!-- Purple label -->
+                      <div class="font-medium text-indigo-500 mb-1 sm:mb-0">Budget ID: {{ row[0] }}</div>
+                      <!-- Vertical line (::before) ~ Date ~ Title ~ Circle marker (::after) -->
+                      <div class="flex flex-col sm:flex-row items-start mb-1 group-last:before:hidden before:absolute before:left-2 sm:before:left-0 before:h-full before:px-px before:bg-slate-300 sm:before:ml-[6.5rem] before:self-start before:-translate-x-1/2 before:translate-y-3 after:absolute after:left-2 sm:after:left-0 after:w-2 after:h-2 after:bg-indigo-600 after:border-4 after:box-content after:border-slate-50 after:rounded-full sm:after:ml-[6.5rem] after:-translate-x-1/2 after:translate-y-1.5">
+                          <time class="sm:absolute left-0 translate-y-0.5 inline-flex items-center justify-center text-xs font-semibold uppercase w-20 h-6 mb-3 sm:mb-0 text-emerald-600 bg-emerald-100 rounded-full">Budget</time>
+                          <div class="text-xl font-bold text-slate-900">Amount: {{ row[2] }}</div>
+                      </div>
+                      <!-- Content -->
+                      <div class="text-slate-500">Event ID: {{ row[1] }}</div>
+                  </div>
+                  {% endfor %}
+                  
+                  <!-- Sponsor Items -->
+                  {% for row in sponsor_data %}
+                  <div class="relative pl-8 sm:pl-32 py-6 group">
+                      <!-- Purple label -->
+                      <div class="font-medium text-indigo-500 mb-1 sm:mb-0">Sponsor ID: {{ row[0] }}</div>
+                      <!-- Vertical line (::before) ~ Date ~ Title ~ Circle marker (::after) -->
+                      <div class="flex flex-col sm:flex-row items-start mb-1 group-last:before:hidden before:absolute before:left-2 sm:before:left-0 before:h-full before:px-px before:bg-slate-300 sm:before:ml-[6.5rem] before:self-start before:-translate-x-1/2 before:translate-y-3 after:absolute after:left-2 sm:after:left-0 after:w-2 after:h-2 after:bg-indigo-600 after:border-4 after:box-content after:border-slate-50 after:rounded-full sm:after:ml-[6.5rem] after:-translate-x-1/2 after:translate-y-1.5">
+                          <time class="sm:absolute left-0 translate-y-0.5 inline-flex items-center justify-center text-xs font-semibold uppercase w-20 h-6 mb-3 sm:mb-0 text-emerald-600 bg-emerald-100 rounded-full">Sponsor</time>
+                          <div class="text-xl font-bold text-slate-900">Fund: {{ row[3] }}</div>
+                      </div>
+                      <!-- Content -->
+                      <div class="text-slate-500">Event ID: {{ row[1] }}</div>
+                      <div class="text-slate-500">Name: {{ row[2] }}</div>
+                      <div class="text-slate-500">Company Name: {{ row[4] }}</div>
+                  </div>
+                  {% endfor %}
+              </div>
+              <!-- End: Vertical Timeline #1 -->
+          </div>
+      </div>
+  </div>
+</section>
+{% endblock %}
