@@ -106,3 +106,10 @@ CREATE TABLE Bank(
     DOT date,
     Amount int
 ); */
+
+
+Bank_id	PIN	Total_Amount
+1	111	9977899
+
+S_Id	E_Id	Name	Fund	Company_Name
+493	1	Sayan Kumar Lakra	1000	Google
