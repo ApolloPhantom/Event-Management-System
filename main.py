@@ -47,10 +47,7 @@ app.add_middleware(
 #     os.getenv("SUPABASE_KEY")
 # )
 
-supabase: Client = create_client(
-    "https://mfpblhjctozquhebtuiy.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mcGJsaGpjdG96cXVoZWJ0dWl5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyOTU1OTY0NCwiZXhwIjoyMDQ1MTM1NjQ0fQ.3Hkko-Pq7ksBbv7Qa7q-0UrOAeJAuNMNChKqBO2l7sk"
-)
+
 
 security = HTTPBearer()
 
@@ -224,6 +221,7 @@ async def home(request: Request):
 
 
 @app.get("/O_home")
+@o_login_required
 async def o_home(request: Request):
     try:
         # Fetch all necessary data
@@ -439,3 +437,8 @@ async def budget_dashboard(request: Request):
     except Exception as e:
         print(f"Error in budget_dashboard: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.api_route("/O_register",methods=["GET","POST"])
+def o_register(request:Request):
+    return 1
