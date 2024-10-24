@@ -1,94 +1,824 @@
-{% extends "layout.html" %}
+{% extends "layout.html" %} {% block title %} Budget Dashboard {% endblock %} {%
+block style %}
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  /* Card Animations */
+  .budget-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .budget-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
 
-{% block title %} 
-Budget Dashboard
-{%endblock%}
+  /* Loading Animations */
+  .loading {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid #6366f1;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s, visibility 0.3s;
+  }
+  .loading-overlay.active {
+    visibility: visible;
+    opacity: 1;
+  }
 
-{% block style%}
-{% endblock %}
+  /* Table Styles */
+  .custom-table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .custom-table th {
+    background-color: #f3f4f6;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .custom-table th:first-child {
+    border-top-left-radius: 0.5rem;
+  }
+  .custom-table th:last-child {
+    border-top-right-radius: 0.5rem;
+  }
 
-{% block main %}
-<nav class="bg-red-800">
-    <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-      <div class="relative flex h-16 items-center justify-between">
-        <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
-          <button type="button" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
-            <svg class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+  /* Scrollbar Styling */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #c5c5c5;
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+
+  /* Tooltip Styles */
+  .tooltip {
+    position: relative;
+    display: inline-block;
+  }
+  .tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+  }
+</style>
+{% endblock %} {% block main %} {% include "nav2.html" %}
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="flex flex-col items-center">
+    <div class="spinner"></div>
+    <p class="mt-4 text-indigo-600 font-medium">Loading...</p>
+  </div>
+</div>
+
+<section class="bg-gray-100 min-h-screen py-12">
+  <div class="container mx-auto px-4">
+    <!-- Header Section -->
+    <div
+      class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4"
+    >
+      <h1 class="text-3xl font-bold text-indigo-700">Budget Dashboard</h1>
+      <div class="flex gap-4">
+        <button
+          onclick="toggleView('table')"
+          class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors flex items-center gap-2"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+            ></path>
+          </svg>
+          Table View
+        </button>
+        <button
+          onclick="toggleView('cards')"
+          class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors flex items-center gap-2"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+            ></path>
+          </svg>
+          Card View
+        </button>
+      </div>
+    </div>
+
+    <!-- Summary Stats Section -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <!-- Total Budget Card -->
+      <div
+        class="budget-card bg-white rounded-lg shadow-md p-6 border-l-4 border-indigo-500"
+      >
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Total Budget</p>
+            <p class="text-2xl font-bold text-indigo-600">
+              ${{ "{:,.2f}".format(total_budget) }}
+            </p>
+          </div>
+          <div class="p-2 bg-indigo-100 rounded-full">
+            <svg
+              class="w-6 h-6 text-indigo-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
             </svg>
-          </button>
+          </div>
         </div>
-        <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-          <div class="flex flex-shrink-0 items-center">
-            <img class="h-8 w-auto" src="/static/budget.png" alt="Your Company">
+        <div class="mt-2">
+          <p class="text-sm text-gray-500">Across all events</p>
+        </div>
+      </div>
+
+      <!-- Total Sponsors Card -->
+      <div
+        class="budget-card bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500"
+      >
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Active Sponsors</p>
+            <p class="text-2xl font-bold text-green-600">
+              {{ total_sponsors }}
+            </p>
           </div>
-          <div class="hidden sm:ml-6 sm:block">
-            <div class="flex space-x-4">
-              <a href="/O_home" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Organizer Dash</a>
-              <a href="/B_create" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Budget Creation</a>
-            </div>
+          <div class="p-2 bg-green-100 rounded-full">
+            <svg
+              class="w-6 h-6 text-green-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+              ></path>
+            </svg>
           </div>
+        </div>
+        <div class="mt-2">
+          <p class="text-sm text-gray-500">Supporting various events</p>
+        </div>
+      </div>
+
+      <!-- Pending Events Card -->
+      <div
+        class="budget-card bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500"
+      >
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Pending Budgets</p>
+            <p class="text-2xl font-bold text-red-600">{{ pending_events }}</p>
+          </div>
+          <div class="p-2 bg-red-100 rounded-full">
+            <svg
+              class="w-6 h-6 text-red-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+          </div>
+        </div>
+        <div class="mt-2">
+          <p class="text-sm text-gray-500">Require attention</p>
         </div>
       </div>
     </div>
-</nav>
-<section class="relative min-h-screen flex flex-col justify-center bg-slate-50 overflow-hidden">
-    <!-- <div class="w-full max-w-6xl mx-auto px-4 md:px-6 py-24">
-        <div class="flex flex-col justify-center divide-y divide-slate-200 [&>*]:py-16">
-            <div class="w-full max-w-3xl mx-auto">
-                <div class="-my-6">
-                    <div class="relative pl-8 sm:pl-32 py-6 group">
-                        <div class="font-medium text-indigo-500 mb-1 sm:mb-0">The origin</div>
-                        <div class="flex flex-col sm:flex-row items-start mb-1 group-last:before:hidden before:absolute before:left-2 sm:before:left-0 before:h-full before:px-px before:bg-slate-300 sm:before:ml-[6.5rem] before:self-start before:-translate-x-1/2 before:translate-y-3 after:absolute after:left-2 sm:after:left-0 after:w-2 after:h-2 after:bg-indigo-600 after:border-4 after:box-content after:border-slate-50 after:rounded-full sm:after:ml-[6.5rem] after:-translate-x-1/2 after:translate-y-1.5">
-                            <time class="sm:absolute left-0 translate-y-0.5 inline-flex items-center justify-center text-xs font-semibold uppercase w-20 h-6 mb-3 sm:mb-0 text-emerald-600 bg-emerald-100 rounded-full">May, 2020</time>
-                            <div class="text-xl font-bold text-slate-900">Acme was founded in Milan, Italy</div>
-                        </div>
-                        <div class="text-slate-500">Pretium lectus quam id leo. Urna et pharetra pharetra massa massa. Adipiscing enim eu neque aliquam vestibulum morbi blandit cursus risus.</div>
-                    </div>
+
+    <!-- Main Content Area -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Budget Overview Section -->
+      <!-- Budget Overview Section -->
+      <div class="lg:col-span-2">
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold text-indigo-600">
+              Budget Overview
+            </h2>
+            <div class="flex gap-2">
+              <button
+                onclick="exportTableToCSV('budget-table')"
+                class="px-4 py-2 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors flex items-center gap-2"
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  ></path>
+                </svg>
+                Export
+              </button>
+            </div>
+          </div>
+
+          <!-- Table View -->
+          <div id="tableView" class="view-content">
+            <div class="overflow-x-auto custom-scrollbar">
+              <table id="budget-table" class="custom-table min-w-full">
+                <thead>
+                  <tr>
+                    <th
+                      class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                    >
+                      Budget ID
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                    >
+                      Event Name
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                    >
+                      Amount
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  {% for row in budget_data %}
+                  <tr class="hover:bg-gray-50 transition-colors duration-200">
+                    <td class="px-4 py-3 text-sm text-gray-900">
+                      {{ row['B_Id'] }}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-900">
+                      {{ row['EventName'] }}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-900">
+                      ${{ "{:,.2f}".format(row['Amount']) }}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Card View -->
+          <div id="cardView" class="view-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {% for row in budget_data %}
+              <div
+                class="bg-gray-50 rounded-lg p-4 hover:shadow-md transition-shadow"
+              >
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h3 class="text-lg font-semibold text-gray-900">
+                      {{ row['EventName'] }}
+                    </h3>
+                    <p class="text-sm text-gray-600">
+                      Budget ID: {{ row['B_Id'] }}
+                    </p>
+                  </div>
+                  <p class="text-lg font-bold text-indigo-600">
+                    ${{ "{:,.2f}".format(row['Amount']) }}
+                  </p>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h2 class="text-xl font-semibold text-indigo-600 mb-6">
+            Budget Analytics
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <canvas id="sponsorshipChart"></canvas>
+            </div>
+            <div>
+              <canvas id="eventBudgetChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sponsor Overview Section -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-green-600">Sponsor Overview</h2>
+                <button onclick="openSponsorModal()" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors">
+                    View All Sponsors
+                </button>
+            </div>
+            
+            <!-- Sponsor Analytics Charts -->
+            <div class="space-y-6">
+                <div>
+                    <canvas id="companyDistributionChart"></canvas>
+                </div>
+                <div>
+                    <canvas id="sponsorsPerEventChart"></canvas>
+                </div>
+                <div>
+                    <canvas id="sponsorMoneyPerEventChart"></canvas>
                 </div>
             </div>
         </div>
-    </div> -->
-    <div class="w-full max-w-6xl mx-auto px-4 md:px-6 py-24">
-      <div class="flex flex-col justify-center divide-y divide-slate-200 [&>*]:py-16">
-          <div class="w-full max-w-3xl mx-auto">
-              <!-- Vertical Timeline #1 -->
-              <div class="-my-6">
-                  <!-- Budget Items -->
-                  {% for row in budget_data %}
-                  <div class="relative pl-8 sm:pl-32 py-6 group">
-                      <!-- Purple label -->
-                      <div class="font-medium text-indigo-500 mb-1 sm:mb-0">Budget ID: {{ row[0] }}</div>
-                      <!-- Vertical line (::before) ~ Date ~ Title ~ Circle marker (::after) -->
-                      <div class="flex flex-col sm:flex-row items-start mb-1 group-last:before:hidden before:absolute before:left-2 sm:before:left-0 before:h-full before:px-px before:bg-slate-300 sm:before:ml-[6.5rem] before:self-start before:-translate-x-1/2 before:translate-y-3 after:absolute after:left-2 sm:after:left-0 after:w-2 after:h-2 after:bg-indigo-600 after:border-4 after:box-content after:border-slate-50 after:rounded-full sm:after:ml-[6.5rem] after:-translate-x-1/2 after:translate-y-1.5">
-                          <time class="sm:absolute left-0 translate-y-0.5 inline-flex items-center justify-center text-xs font-semibold uppercase w-20 h-6 mb-3 sm:mb-0 text-emerald-600 bg-emerald-100 rounded-full">Budget</time>
-                          <div class="text-xl font-bold text-slate-900">Amount: {{ row[2] }}</div>
-                      </div>
-                      <!-- Content -->
-                      <div class="text-slate-500">Event ID: {{ row[1] }}</div>
-                  </div>
-                  {% endfor %}
-                  
-                  <!-- Sponsor Items -->
-                  {% for row in sponsor_data %}
-                  <div class="relative pl-8 sm:pl-32 py-6 group">
-                      <!-- Purple label -->
-                      <div class="font-medium text-indigo-500 mb-1 sm:mb-0">Sponsor ID: {{ row[0] }}</div>
-                      <!-- Vertical line (::before) ~ Date ~ Title ~ Circle marker (::after) -->
-                      <div class="flex flex-col sm:flex-row items-start mb-1 group-last:before:hidden before:absolute before:left-2 sm:before:left-0 before:h-full before:px-px before:bg-slate-300 sm:before:ml-[6.5rem] before:self-start before:-translate-x-1/2 before:translate-y-3 after:absolute after:left-2 sm:after:left-0 after:w-2 after:h-2 after:bg-indigo-600 after:border-4 after:box-content after:border-slate-50 after:rounded-full sm:after:ml-[6.5rem] after:-translate-x-1/2 after:translate-y-1.5">
-                          <time class="sm:absolute left-0 translate-y-0.5 inline-flex items-center justify-center text-xs font-semibold uppercase w-20 h-6 mb-3 sm:mb-0 text-emerald-600 bg-emerald-100 rounded-full">Sponsor</time>
-                          <div class="text-xl font-bold text-slate-900">Fund: {{ row[3] }}</div>
-                      </div>
-                      <!-- Content -->
-                      <div class="text-slate-500">Event ID: {{ row[1] }}</div>
-                      <div class="text-slate-500">Name: {{ row[2] }}</div>
-                      <div class="text-slate-500">Company Name: {{ row[4] }}</div>
-                  </div>
-                  {% endfor %}
-              </div>
-              <!-- End: Vertical Timeline #1 -->
-          </div>
+    </div>
+    </div>
+
+    <!-- Events Without Budget Section -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-semibold text-red-600 mb-6">
+        Events Without Budget
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for event in events_without_budget %}
+        <div
+          class="border-l-4 border-red-500 pl-4 py-2 bg-red-50 rounded-r-lg hover:bg-red-100 transition duration-300"
+        >
+          <p class="text-lg font-bold text-red-700">{{ event['Name'] }}</p>
+          <p class="text-sm text-gray-600">Event ID: {{ event['E_Id'] }}</p>
+          <p class="text-sm text-gray-600">
+            Date: {{ event['S_Date'] }} - {{ event['E_Date'] }}
+          </p>
+        </div>
+        {% endfor %}
       </div>
+    </div>
   </div>
 </section>
+<div id="sponsorModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-bold text-gray-900">All Sponsors</h3>
+            <button onclick="closeSponsorModal()" class="text-gray-600 hover:text-gray-900">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead>
+                    <tr>
+                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
+                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
+                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fund</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for sponsor in sponsor_data %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ sponsor.Name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ sponsor.Company_Name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ sponsor.EventName or 'Unassigned' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${{ "{:,.2f}".format(sponsor.Fund) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+  // Global loading state management
+  const loadingStates = {
+      isExporting: false,
+      isChangingView: false
+  };
+
+  // Show loading overlay with optional custom message
+  function showLoading(message = 'Loading...') {
+      const overlay = document.getElementById('loadingOverlay');
+      const messageElement = overlay.querySelector('p');
+      messageElement.textContent = message;
+      overlay.classList.add('active');
+  }
+
+  // Hide loading overlay
+  function hideLoading() {
+      document.getElementById('loadingOverlay').classList.remove('active');
+  }
+
+  // Export table to CSV with error handling
+  async function exportTableToCSV(tableId) {
+      if (loadingStates.isExporting) return;
+      loadingStates.isExporting = true;
+      showLoading('Preparing export...');
+
+      try {
+          const table = document.getElementById(tableId);
+          const rows = Array.from(table.rows);
+
+          // Get headers
+          const headers = Array.from(rows[0].cells).map(cell =>
+              `"${cell.textContent.trim().replace(/"/g, '""')}"`
+          );
+
+          // Get data rows
+          const data = rows.slice(1).map(row =>
+              Array.from(row.cells)
+                  .map(cell => `"${cell.textContent.trim().replace(/"/g, '""')}"`)
+                  .join(',')
+          );
+
+          // Combine headers and data
+          const csvContent = [headers.join(','), ...data].join('\n');
+
+          // Create download link
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.setAttribute('href', url);
+          link.setAttribute('download', `budget_data_${new Date().toISOString().split('T')[0]}.csv`);
+          link.style.visibility = 'hidden';
+
+          // Trigger download
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+
+      } catch (error) {
+          console.error('Export failed:', error);
+          alert('Failed to export data. Please try again.');
+      } finally {
+          loadingStates.isExporting = false;
+          hideLoading();
+      }
+  }
+
+  // Toggle between table and card view with error handling
+  function toggleView(viewType) {
+      if (loadingStates.isChangingView) return;
+      loadingStates.isChangingView = true;
+      showLoading('Changing view...');
+
+      try {
+          const tableView = document.getElementById('tableView');
+          const cardView = document.getElementById('cardView');
+
+          if (!tableView || !cardView) {
+              throw new Error('View elements not found');
+          }
+
+          if (viewType === 'table') {
+              tableView.classList.remove('hidden');
+              cardView.classList.add('hidden');
+          } else {
+              tableView.classList.add('hidden');
+              cardView.classList.remove('hidden');
+          }
+
+          localStorage.setItem('preferredView', viewType);
+
+      } catch (error) {
+          console.error('View toggle failed:', error);
+          alert('Failed to change view. Please refresh the page.');
+      } finally {
+          loadingStates.isChangingView = false;
+          hideLoading();
+      }
+  }
+
+  function initializeCharts() {
+      // Prepare data for charts
+      const sponsorData = {{ sponsor_data|tojson }};
+      const budgetData = {{ budget_data|tojson }};
+
+      // Sponsorship Distribution Chart
+      const sponsorshipCtx = document.getElementById('sponsorshipChart').getContext('2d');
+      new Chart(sponsorshipCtx, {
+          type: 'pie',
+          data: {
+              labels: sponsorData.map(sponsor => sponsor.Company_Name),
+              datasets: [{
+                  data: sponsorData.map(sponsor => sponsor.Fund),
+                  backgroundColor: [
+                      '#4F46E5', '#7C3AED', '#EC4899', '#F59E0B', '#10B981',
+                      '#6366F1', '#8B5CF6', '#F472B6', '#FBBF24', '#34D399'
+                  ]
+              }]
+          },
+          options: {
+              responsive: true,
+              plugins: {
+                  legend: {
+                      position: 'bottom'
+                  },
+                  title: {
+                      display: true,
+                      text: 'Sponsorship Distribution'
+                  }
+              }
+          }
+      });
+
+      // Event Budget Comparison Chart
+      const eventBudgetCtx = document.getElementById('eventBudgetChart').getContext('2d');
+      new Chart(eventBudgetCtx, {
+          type: 'bar',
+          data: {
+              labels: budgetData.map(item => item.EventName),
+              datasets: [{
+                  label: 'Event Budget',
+                  data: budgetData.map(item => item.Amount),
+                  backgroundColor: '#4F46E5'
+              }]
+          },
+          options: {
+              responsive: true,
+              plugins: {
+                  legend: {
+                      position: 'bottom'
+                  },
+                  title: {
+                      display: true,
+                      text: 'Event Budget Comparison'
+                  }
+              },
+              scales: {
+                  y: {
+                      beginAtZero: true,
+                      ticks: {
+                          callback: function(value) {
+                              return '$' + value.toLocaleString();
+                          }
+                      }
+                  }
+              }
+          }
+      });
+  }
+  // Modal functions
+function openSponsorModal() {
+    document.getElementById('sponsorModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeSponsorModal() {
+    document.getElementById('sponsorModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+// Close modal when clicking outside
+document.getElementById('sponsorModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeSponsorModal();
+    }
+});
+
+// Initialize sponsor analytics charts
+function initializeSponsorCharts() {
+    const analyticsData = {{ analytics_data|tojson }};
+    
+    // Company Distribution Pie Chart
+    new Chart(document.getElementById('companyDistributionChart').getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: Object.keys(analyticsData.company_funds),
+            datasets: [{
+                data: Object.values(analyticsData.company_funds),
+                backgroundColor: [
+                    '#4F46E5', '#7C3AED', '#EC4899', '#F59E0B', '#10B981',
+                    '#6366F1', '#8B5CF6', '#F472B6', '#FBBF24', '#34D399'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                title: {
+                    display: true,
+                    text: 'Company-wise Sponsorship Distribution'
+                }
+            }
+        }
+    });
+
+    // Sponsors per Event Line Chart
+    new Chart(document.getElementById('sponsorsPerEventChart').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: Object.keys(analyticsData.sponsors_per_event),
+            datasets: [{
+                label: 'Number of Sponsors',
+                data: Object.values(analyticsData.sponsors_per_event),
+                borderColor: '#4F46E5',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Sponsors per Event'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // Sponsor Money per Event Line Chart
+    new Chart(document.getElementById('sponsorMoneyPerEventChart').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: Object.keys(analyticsData.sponsor_money_per_event),
+            datasets: [{
+                label: 'Total Sponsorship Amount',
+                data: Object.values(analyticsData.sponsor_money_per_event),
+                borderColor: '#10B981',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Sponsorship Amount per Event'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+  // Initialize dashboard with charts
+  document.addEventListener('DOMContentLoaded', function() {
+      hideLoading();
+      initTooltips();
+      initializeCharts();
+      initializeSponsorCharts();
+
+      // Restore preferred view
+      const preferredView = localStorage.getItem('preferredView');
+      if (preferredView) {
+          toggleView(preferredView);
+      }
+
+      console.log('Dashboard initialized successfully');
+  });
+
+  // Initialize tooltips
+  function initTooltips() {
+      const tooltips = document.querySelectorAll('[data-tooltip]');
+      tooltips.forEach(element => {
+          element.addEventListener('mouseenter', e => {
+              const tooltip = element.querySelector('.tooltiptext');
+              if (tooltip) {
+                  const rect = element.getBoundingClientRect();
+                  tooltip.style.left = `${rect.left + (rect.width / 2)}px`;
+                  tooltip.style.top = `${rect.top - 10}px`;
+              }
+          });
+      });
+  }
+
+  // Initialize dashboard
+  document.addEventListener('DOMContentLoaded', function() {
+      hideLoading();
+      initTooltips();
+
+      // Restore preferred view
+      const preferredView = localStorage.getItem('preferredView');
+      if (preferredView) {
+          toggleView(preferredView);
+      }
+
+      // Add table row hover effect
+      const tableRows = document.querySelectorAll('#budget-table tbody tr');
+      tableRows.forEach(row => {
+          row.addEventListener('mouseover', () => row.classList.add('bg-gray-50'));
+          row.addEventListener('mouseout', () => row.classList.remove('bg-gray-50'));
+      });
+
+      console.log('Dashboard initialized successfully');
+  });
+
+  // Handle errors globally
+  window.addEventListener('error', function(e) {
+      console.error('Global error:', e.error);
+      hideLoading();
+      alert('An error occurred. Please refresh the page.');
+  });
+</script>
 {% endblock %}

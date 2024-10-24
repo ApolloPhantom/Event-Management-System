@@ -1,5 +1,6 @@
 import os
 import requests
+from requests.exceptions import RequestException
 import random
 from functools import wraps
 from flask import *
@@ -34,7 +35,41 @@ def after_request(response):
     response.headers["Pragma"] = "no-cache"
     return response
 
+@app.route('/error',methods=["GET"])
+def error_post():
+    if request.method == "GET":
+        return render_template("Error.html",error=session["error"])
 
+MEME_API_URL = 'https://meme-api.com/gimme'
+FALLBACK_MEMES = [
+    '/static/fallback_meme1.jpg',
+    '/static/fallback_meme2.jpg',
+    '/static/fallback_meme3.jpg',
+]
+def get_meme():
+    try:
+        response = requests.get(MEME_API_URL, timeout=5)
+        response.raise_for_status()
+        meme_data = response.json()
+        return {
+            'url': meme_data['url'],
+            'title': meme_data.get('title', 'Funny Meme')
+        }
+    except RequestException as e:
+        app.logger.error(f"Error fetching meme: {str(e)}")
+        return None
+
+@app.route('/get_meme')
+def fetch_meme():
+    meme = get_meme()
+    if meme:
+        return jsonify(meme)
+    else:
+        fallback_meme = {
+            'url': app.static_url_path + '/' + FALLBACK_MEMES[0],
+            'title': 'Fallback Meme'
+        }
+        return jsonify(fallback_meme), 503  # Service Unavailable
 @app.route("/O_register",methods=m)
 def o_register():
     if request.method == "GET":
@@ -79,26 +114,30 @@ def o_register():
 
 @app.route("/O_login",methods=m)
 def o_login():
-    if request.method == "GET":
-        return render_template("O_login.html")
-    else:
-        id = int(request.form.get('id'))
-        password = request.form.get('password')
-        con = sqlite3.connect(db_path)
-        cur = con.cursor()
-        try:
-            cur.execute("select * from Organizer where O_ID = ? and Password = ?",(id,password,))
-            r = cur.fetchall()
-            con.close()
-            if len(r) == 0:
+    try:
+        if request.method == "GET":
+            return render_template("O_login.html")
+        else:
+            id = int(request.form.get('id'))
+            password = request.form.get('password')
+            con = sqlite3.connect(db_path)
+            cur = con.cursor()
+            try:
+                cur.execute("select * from Organizer where O_ID = ? and Password = ?",(id,password,))
+                r = cur.fetchall()
+                con.close()
+                if len(r) == 0:
+                    return ""
+                else:
+                    session["o_id"] = id
+                    return "Success"
+            except Exception as e:
+                print("Error:-",type(e).__name__)
+                con.close()
                 return ""
-            else:
-                session["o_id"] = id
-                return "Success"
-        except Exception as e:
-            print("Error:-",type(e).__name__)
-            con.close()
-            return ""
+    except Exception as e:
+        print("Error:-",type(e).__name__)
+        return ""
         
 @app.route("/O_logout")
 @o_login_required
@@ -312,21 +351,55 @@ def e_schedule():
             con.close()
             return ""
     
+# @app.route("/B_dash")
+# def b_dash():
+#     con = sqlite3.connect(db_path)
+#     cur = con.cursor()
+#     cur.execute("SELECT * FROM Budget")
+#     budget_data = cur.fetchall()
+#     cur.execute("SELECT * FROM Sponsor")
+#     sponsor_data = cur.fetchall()
+#     cur.execute("SELECT * FROM Event")
+#     event_data = cur.fetchall()
+#     con.close()
+    
+#     return render_template("B_Dash.html",budget_data=budget_data, sponsor_data=sponsor_data,event_data=event_data)
+
 @app.route("/B_dash")
 def b_dash():
     con = sqlite3.connect(db_path)
+    con.row_factory = sqlite3.Row 
     cur = con.cursor()
-     # Fetch data from the Budget table
-    cur.execute("SELECT * FROM Budget")
-    budget_data = cur.fetchall()
 
-    # Fetch data from the Sponsor table
-    cur.execute("SELECT * FROM Sponsor")
+    cur.execute("""
+        SELECT b.*, e.Name as EventName 
+        FROM Budget b
+        LEFT JOIN Event e ON b.E_Id = e.E_Id
+    """)
+    budget_data = cur.fetchall()
+    
+    cur.execute("""
+        SELECT s.*, e.Name as EventName 
+        FROM Sponsor s
+        LEFT JOIN Event e ON s.E_Id = e.E_Id
+        ORDER BY s.E_Id
+    """)
     sponsor_data = cur.fetchall()
+    
+    cur.execute("""
+        SELECT e.* 
+        FROM Event e
+        LEFT JOIN Budget b ON e.E_Id = b.E_Id
+        WHERE b.E_Id IS NULL
+    """)
+    events_without_budget = cur.fetchall()
+    
     con.close()
     
-    return render_template("B_Dash.html",budget_data=budget_data, sponsor_data=sponsor_data)
-    
+    return render_template("B_Dash.html", 
+                           budget_data=budget_data, 
+                           sponsor_data=sponsor_data, 
+                           events_without_budget=events_without_budget)    
 
 @app.route("/B_create",methods=m)
 def b_create():
@@ -522,23 +595,27 @@ def a_register():
     
 @app.route("/Ticket")
 def ticket():
-    L = ["a_id","name","phone","spec","event","email"]
-    for i in L:
-        if session[i] is None:
-             return render_template("index.html",variable="3")
-    
-    output = io.BytesIO()
-    for i in L:
-        output.write(f"{session[i]}\n".encode())
-    output.seek(0)
-    
-    return send_file(
-        output,
-        mimetype='text/plain',
-        download_name='ticket.txt',
-        as_attachment=True
-    )
-    
+    try:
+        L = ["a_id","name","phone","spec","event","email"]
+        for i in L:
+            if session[i] is None:
+                return render_template("index.html",variable="3")
+        
+        output = io.BytesIO()
+        for i in L:
+            output.write(f"{session[i]}\n".encode())
+        output.seek(0)
+        
+        return send_file(
+            output,
+            mimetype='text/plain',
+            download_name='ticket.txt',
+            as_attachment=True
+        )
+    except Exception as e:
+        print(e)
+        session["error"] = e
+        return redirect("/error")
 
 @app.route("/S_Payment",methods=m)
 def payment():

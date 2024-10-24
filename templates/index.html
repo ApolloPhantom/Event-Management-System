@@ -1,131 +1,498 @@
 {% extends "layout.html" %}
 
-{% block title %} 
+{% block title %}
 Home
-{%endblock%}
+{% endblock %}
 
-{% block style%}
+{% block style %}
+<style>
+  .event-card {
+    background-color: rgba(255, 255, 255, 0.98);
+    border-radius: 1rem;
+    display: none;
+    transition: all 0.5s ease;
+    max-height: 600px;
+    overflow: hidden;
+  }
+  
+  .event-card.active {
+    display: block;
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .event-card.expanded {
+    max-height: 2000px;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .carousel-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    z-index: 10;
+  }
+  
+  .carousel-button:hover {
+    background-color: white;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-50%) scale(1.1);
+  }
+  
+  .carousel-button.prev {
+    left: -24px;
+  }
+  
+  .carousel-button.next {
+    right: -24px;
+  }
+  
+  .carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 1.5rem;
+  }
+  
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #cbd5e1;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  
+  .dot:hover {
+    transform: scale(1.2);
+  }
+  
+  .dot.active {
+    background-color: #2563eb;
+    transform: scale(1.2);
+  }
+  
+  .carousel-container {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .auto-play-control {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  
+  .auto-play-control:hover {
+    transform: scale(1.1);
+  }
+  
+  .event-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease;
+  }
+  
+  .event-details.expanded {
+    max-height: 1000px;
+  }
+  
+  .view-details-btn {
+    width: 100%;
+    background-color: #2563eb;
+    color: white;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  
+  .view-details-btn:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-2px);
+  }
+  
+  .expand-icon {
+    transition: transform 0.3s;
+  }
+  
+  .expand-icon.rotated {
+    transform: rotate(180deg);
+  }
+
+  .detail-item {
+    display: flex;
+    align-items: start;
+    padding: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .detail-item:last-child {
+    border-bottom: none;
+  }
+
+  .detail-label {
+    font-weight: 500;
+    color: #64748b;
+    min-width: 150px;
+  }
+
+  .detail-value {
+    color: #334155;
+    flex: 1;
+  }
+
+  .venue-info {
+    background-color: #f8fafc;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .venue-detail {
+    margin-bottom: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .venue-detail-label {
+    font-weight: 500;
+    color: #64748b;
+    min-width: 80px;
+  }
+  .grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gap-3 {
+      gap: 0.75rem;
+  }
+
+  .space-y-4 > * + * {
+      margin-top: 1rem;
+  }
+</style>
 {% endblock %}
 
 {% block main %}
-<nav class="bg-green-800">
-  <script>
-    let a = "{{ variable }}";
-    if (a==="1"){
-      alert("Error in payment");
-      window.location.href = "/";
-    }
-    else if(a==="2"){
-      alert("Payment Success");
-      window.location.href = "/";
-    }
-    else if(a==="3"){
-      alert("You have not registred.")
-      window.location.href = "/";
-    }
-  </script>
-    <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-      <div class="relative flex h-16 items-center justify-between">
-        <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
-          <button type="button" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
-            <svg class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+{% include "nav1.html" %}
+
+<section class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4 md:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Section Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Upcoming Events</h1>
+            <p class="text-lg text-gray-600">Discover and participate in our exciting events</p>
         </div>
-        <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-          <div class="flex flex-shrink-0 items-center">
-            <img class="h-8 w-auto" src="/static/event.png" alt="Your Company">
-          </div>
-          <div class="hidden sm:ml-6 sm:block">
-            <div class="flex space-x-4">
-              <a href="/S_register" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Sponsor Registration</a>
-              <a href="/S_Fund" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Sponsor Fund</a>
-              <a href="/S_Refund" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Sponsor Refund</a>
-              <a href="/Ticket" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Tickets</a>
-              <a href="/A_register" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Attendee Registration</a>
-              <a href="/O_home" class="absolute right-0 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Organizer Access</a>
+
+        <!-- Carousel Container -->
+        <div class="carousel-container">
+            <!-- Auto-play Control -->
+            <button class="auto-play-control" onclick="toggleAutoPlay()">
+                <svg id="play-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <svg id="pause-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                    <rect x="6" y="4" width="4" height="16"></rect>
+                    <rect x="14" y="4" width="4" height="16"></rect>
+                </svg>
+            </button>
+
+            <!-- Navigation Buttons -->
+            <button class="carousel-button prev" onclick="moveCarousel(-1)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+            
+            <button class="carousel-button next" onclick="moveCarousel(1)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </button>
+
+            <!-- Events -->
+            {% for event in events %}
+            <div class="event-card {% if loop.first %}active{% endif %} shadow-lg" data-index="{{ loop.index0 }}">
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ event.Name }}</h2>
+                    
+                    <!-- Basic Event Information -->
+                    <div class="space-y-4 mb-6">
+                        <!-- Department -->
+                        <div class="flex items-center text-gray-700">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            <span>{{ event.Hosting_Dept if event.Hosting_Dept else 'TBA' }}</span>
+                        </div>
+                        
+                        <!-- Event Duration -->
+                        <div class="flex items-center text-gray-700">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>{{ event.duration if event.duration else 'TBA' }} days</span>
+                        </div>
+                        
+                        <!-- Time Left -->
+                        <div class="flex items-center text-gray-700">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {% if event.timeline %}
+                                <span>
+                                    {% if event.timeline.status == "Upcoming" %}
+                                        Starts in {{ event.timeline.time_left }} days
+                                    {% elif event.timeline.status == "In Progress" %}
+                                        {{ event.timeline.time_left }} days remaining
+                                    {% else %}
+                                        Event completed
+                                    {% endif %}
+                                </span>
+                            {% else %}
+                                <span>TBA</span>
+                            {% endif %}
+                        </div>
+                    </div>
+            
+                    <!-- Event Timeline -->
+                    {% if event.timeline %}
+                    <div class="mb-6">
+                        <div class="flex justify-between text-sm text-gray-600 mb-2">
+                            <span>Progress</span>
+                            <span>{{ event.timeline.progress }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+                                 style="width: {{ event.timeline.progress }}%"></div>
+                        </div>
+                        <div class="text-sm text-gray-600 mt-2">
+                            Status: {{ event.timeline.status }}
+                        </div>
+                    </div>
+                    {% endif %}
+            
+                    <!-- Expandable Details -->
+                    <div class="event-details">
+                        <!-- Number of Schedules -->
+                        <div class="detail-item">
+                            <span class="detail-label">Number of Schedules:</span>
+                            <span class="detail-value">{{ event.No_of_Schedules if event.No_of_Schedules else 'TBA' }}</span>
+                        </div>
+                        
+                        <!-- Venue Information -->
+                        <div class="detail-item">
+                            <span class="detail-label">Venue Details:</span>
+                            <div class="detail-value">
+                                {% if event.venue %}
+                                <div class="venue-info">
+                                    <div class="venue-detail">
+                                        <span class="venue-detail-label">Name:</span>
+                                        <span>{{ event.venue.Name }}</span>
+                                    </div>
+                                    <div class="venue-detail">
+                                        <span class="venue-detail-label">Address:</span>
+                                        <span>{{ event.venue.Address }}</span>
+                                    </div>
+                                    <div class="venue-detail">
+                                        <span class="venue-detail-label">Capacity:</span>
+                                        <span>{{ event.venue.Capacity }} people</span>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <span class="text-gray-500">Venue information not available</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <!-- Event Schedules -->
+                        <div class="detail-item">
+                          <span class="detail-label">Event Schedules:</span>
+                          <div class="detail-value">
+                              {% if event.schedules %}
+                              <div class="space-y-4">
+                                  {% for schedule in event.schedules %}
+                                  <div class="bg-gray-50 rounded-lg p-4">
+                                      <div class="grid grid-cols-2 gap-3">
+                                          <div>
+                                              <span class="text-sm text-gray-500">Programme</span>
+                                              <p class="font-medium">{{ schedule.Programme_Name }}</p>
+                                          </div>
+                                          <div>
+                                              <span class="text-sm text-gray-500">Host</span>
+                                              <p class="font-medium">{{ schedule.Host_Name }}</p>
+                                          </div>
+                                          <div>
+                                              <span class="text-sm text-gray-500">Participants</span>
+                                              <p class="font-medium">{{ schedule.No_of_Participants }}</p>
+                                          </div>
+                                          <div>
+                                              <span class="text-sm text-gray-500">Budget Required</span>
+                                              <p class="font-medium">₹{{ schedule.Amount_Required }}</p>
+                                          </div>
+                                          <div>
+                                              <span class="text-sm text-gray-500">Status</span>
+                                              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                                  {% if schedule.Status %}
+                                                      bg-green-100 text-green-800
+                                                  {% else %}
+                                                      bg-yellow-100 text-yellow-800
+                                                  {% endif %}
+                                              ">
+                                                  {{ 'Completed' if schedule.Status else 'Pending' }}
+                                              </span>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  {% endfor %}
+                              </div>
+                              {% else %}
+                              <span class="text-gray-500">No schedules available</span>
+                              {% endif %}
+                          </div>
+                        </div>
+                    </div>
+                    
+                    <!-- View Details Button -->
+                    <button class="view-details-btn mt-4" onclick="toggleDetails(this)">
+                        <span>View Details</span>
+                        <svg class="expand-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-</nav>
-<section class="relative min-h-screen flex flex-col justify-center bg-slate-50 overflow-hidden">    
-<!-- <div id="default-carousel" class="relative w-full" data-carousel="slide">
-    <div class="relative h-56 overflow-hidden rounded-lg md:h-96">
-        <div class="hidden duration-700 ease-in-out" data-carousel-item>
-            <img src="/docs/images/carousel/carousel-1.svg" class="absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" alt="...">
+            {% endfor %}
+            
+            <!-- Carousel Dots -->
+            <div class="carousel-dots">
+                {% for event in events %}
+                <span class="dot {% if loop.first %}active{% endif %}" onclick="goToSlide({{ loop.index0 }})"></span>
+                {% endfor %}
+            </div>
         </div>
     </div>
-    <div class="absolute z-30 flex -translate-x-1/2 bottom-5 left-1/2 space-x-3 rtl:space-x-reverse">
-        <button type="button" class="w-3 h-3 rounded-full" aria-current="true" aria-label="Slide 1" data-carousel-slide-to="0"></button>
-        <button type="button" class="w-3 h-3 rounded-full" aria-current="false" aria-label="Slide 2" data-carousel-slide-to="1"></button>
-        <button type="button" class="w-3 h-3 rounded-full" aria-current="false" aria-label="Slide 3" data-carousel-slide-to="2"></button>
-        <button type="button" class="w-3 h-3 rounded-full" aria-current="false" aria-label="Slide 4" data-carousel-slide-to="3"></button>
-        <button type="button" class="w-3 h-3 rounded-full" aria-current="false" aria-label="Slide 5" data-carousel-slide-to="4"></button>
-    </div>
-    <button type="button" class="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-prev>
-        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-            <svg class="w-4 h-4 text-white dark:text-gray-800 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 1 1 5l4 4"/>
-            </svg>
-            <span class="sr-only">Previous</span>
-        </span>
-    </button>
-    <button type="button" class="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-next>
-        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-            <svg class="w-4 h-4 text-white dark:text-gray-800 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
-            </svg>
-            <span class="sr-only">Next</span>
-        </span>
-    </button>
-</div> -->
-<div id="default-carousel" class="relative w-full" data-carousel="slide">
-  <!-- Carousel wrapper -->
-  <div class="relative h-56 overflow-hidden rounded-lg md:h-96">
-      {% for event in events %}
-      <!-- Item {{ loop.index }} -->
-      <div class="hidden duration-700 ease-in-out" data-carousel-item>
-          <img src="" class="absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" alt="{{ event.Name }}">
-          <div class="absolute inset-0 bg-black opacity-50"></div>
-          <div class="absolute inset-0 flex items-center justify-center">
-              <div class="text-white text-center">
-                  <h2 class="text-xl font-semibold">{{ event[1] }}</h2>
-                  <p>{{ event[4] }}</p>
-                  <p>{{ event[2] }} to {{ event[3] }}</p>
-                  <p>No. of Schedules: {{ event[5] }}</p>
-                  <p>Starting Capital: Rs{{ event[6] }}</p>
-                  <p>Venue_Id: {{ event[7] }}</p>
-              </div>
-          </div>
-      </div>
-      {% endfor %}
-  </div>
-  <!-- Slider indicators -->
-  <div class="absolute z-30 flex -translate-x-1/2 bottom-5 left-1/2 space-x-3 rtl:space-x-reverse">
-      {% for event in events %}
-      <button type="button" class="w-3 h-3 rounded-full" aria-current="{{ 'true' if loop.first else 'false' }}" aria-label="Slide {{ loop.index }}" data-carousel-slide-to="{{ loop.index }}"></button>
-      {% endfor %}
-  </div>
-  <!-- Slider controls -->
-  <button type="button" class="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-prev>
-      <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-          <svg class="w-4 h-4 text-white dark:text-gray-800 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 1 1 5l4 4"/>
-          </svg>
-          <span class="sr-only">Previous</span>
-      </span>
-  </button>
-  <button type="button" class="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-next>
-      <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-          <svg class="w-4 h-4 text-white dark:text-gray-800 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
-          </svg>
-          <span class="sr-only">Next</span>
-      </span>
-  </button>
-</div>
 </section>
+
+<script>
+let currentIndex = 0;
+const totalSlides = {{ events|length if events else 0 }};
+let autoPlayInterval = null;
+let isAutoPlaying = false;
+
+function toggleAutoPlay() {
+    const playIcon = document.getElementById('play-icon');
+    const pauseIcon = document.getElementById('pause-icon');
+    
+    if (isAutoPlaying) {
+        clearInterval(autoPlayInterval);
+        playIcon.style.display = 'block';
+        pauseIcon.style.display = 'none';
+    } else {
+        autoPlayInterval = setInterval(() => moveCarousel(1), 15000);
+        playIcon.style.display = 'none';
+        pauseIcon.style.display = 'block';
+    }
+    
+    isAutoPlaying = !isAutoPlaying;
+}
+
+function updateCarousel() {
+    document.querySelectorAll('.event-card').forEach(card => {
+        card.classList.remove('active');
+        // Reset expanded state when switching slides
+        const details = card.querySelector('.event-details');
+        const button = card.querySelector('.view-details-btn');
+        const expandIcon = button.querySelector('.expand-icon');
+        details.classList.remove('expanded');
+        expandIcon.classList.remove('rotated');
+        card.classList.remove('expanded');
+        button.querySelector('span').textContent = 'View Details';
+    });
+
+    document.querySelector(`.event-card[data-index="${currentIndex}"]`).classList.add('active');
+    
+    document.querySelectorAll('.dot').forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentIndex);
+    });
+}
+
+function moveCarousel(direction) {
+    currentIndex = (currentIndex + direction + totalSlides) % totalSlides;
+    updateCarousel();
+}
+
+function goToSlide(index) {
+    currentIndex = index;
+    updateCarousel();
+}
+
+function toggleDetails(button) {
+    const card = button.closest('.event-card');
+    const details = card.querySelector('.event-details');
+    const expandIcon = button.querySelector('.expand-icon');
+    
+    details.classList.toggle('expanded');
+    expandIcon.classList.toggle('rotated');
+    card.classList.toggle('expanded');
+    
+    button.querySelector('span').textContent = 
+        details.classList.contains('expanded') ? 'Show Less' : 'View Details';
+}
+
+// Initialize carousel when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    updateCarousel();
+    
+    // Start autoplay
+    toggleAutoPlay();
+});
+
+// Pause autoplay when user interacts with carousel
+document.querySelector('.carousel-container').addEventListener('mouseover', () => {
+    if (isAutoPlaying) {
+        clearInterval(autoPlayInterval);
+    }
+});
+
+// Resume autoplay when user stops interacting
+document.querySelector('.carousel-container').addEventListener('mouseout', () => {
+    if (isAutoPlaying) {
+        autoPlayInterval = setInterval(() => moveCarousel(1), 5000);
+    }
+});
+</script>
 {% endblock %}

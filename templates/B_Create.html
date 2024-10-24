@@ -2,36 +2,13 @@
 
 {% block title %} 
 Budget Creation 
-{%endblock%}
+{% endblock %}
 
-{% block style%}
+{% block style %}
 {% endblock %}
 
 {% block main %}
-<nav class="bg-red-800">
-    <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-      <div class="relative flex h-16 items-center justify-between">
-        <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
-          <button type="button" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
-            <svg class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-          <div class="flex flex-shrink-0 items-center">
-            <img class="h-8 w-auto" src="/static/budget.png" alt="Your Company">
-          </div>
-          <div class="hidden sm:ml-6 sm:block">
-            <div class="flex space-x-4">
-              <a href="/O_home" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Organizer Dash</a>
-              <a href="/B_create" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Budget Creation</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-</nav>
+{% include "nav2.html" %}
 <div class="min-h-screen p-6 bg-gray-100 flex items-center justify-center">
     <div class="container max-w-screen-lg mx-auto">
       <div>
@@ -58,8 +35,10 @@ Budget Creation
                   <input type="number" name="a_req" id="a_req" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" value="" />
                 </div>
                 <div class="md:col-span-5 text-right">
-                  <div class="inline-flex items-end">
+                  <div class="inline-flex items-end space-x-2">
                     <button id="submitBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Submit</button>
+                    <button id="clearBtn" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Clear</button>
+                    <a href="/B_dash" id="cancelBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Cancel</a>
                   </div>
                 </div>
               </div>
@@ -70,7 +49,7 @@ Budget Creation
     </div>
   </div>
   <script>
-    document.getElementById('submitBtn').addEventListener('click', function(){
+    document.getElementById('submitBtn').addEventListener('click', function(event){
       event.preventDefault();
       let value = ["event","a_req"];
       let isError = false;
@@ -110,5 +89,14 @@ Budget Creation
         .catch(error => console.log('Error:', error));
       }
     });
+
+    // Clear button functionality
+    document.getElementById('clearBtn').addEventListener('click', function(event) {
+      event.preventDefault();
+      document.getElementById('event').selectedIndex = 0;
+      document.getElementById('a_req').value = '';
+    });
+
+    // Cancel button functionality is handled by the href attribute in the HTML
   </script>
-  {% endblock %}
+{% endblock %}

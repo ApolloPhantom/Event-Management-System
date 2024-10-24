@@ -1,97 +1,245 @@
 {% extends "layout.html" %}
 
-{% block title %} 
-Organizer Home 
-{%endblock%}
+{% block title %}Organizer Dashboard{% endblock %}
 
-{% block style%}
+{% block head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
+<style>
+    .event-navigation {
+        opacity: 0.7;
+        transition: opacity 0.3s;
+    }
+    .event-navigation:hover {
+        opacity: 1;
+    }
+</style>
 {% endblock %}
 
 {% block main %}
-<nav class="bg-blue-800">
-    <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-      <div class="relative flex h-16 items-center justify-between">
-        <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
-          <button type="button" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
-            <svg class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-          <div class="flex flex-shrink-0 items-center">
-            <img class="h-8 w-auto" src="/static/layers.png" alt="Your Company">
-          </div>
-          <div class="hidden sm:ml-6 sm:block">
-            <div class="flex space-x-4">
-              <a href="/E_register" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Event Registration</a>
-              <a href="/V_register" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Venue Registration</a>
-              <a href="/E_schedule" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Event Schedule</a>
-              <a href="/B_dash" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Budget Dashboard</a>
-              <a href="/O_logout" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Logout</a>
-              <a href="/O_change" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Change Password</a>
-              <a href="/" class="absolute right-0 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Public Access</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-</nav>
-<section class="relative min-h-screen flex flex-col justify-center bg-slate-50 overflow-hidden">
-  <!-- <div class="w-full max-w-6xl mx-auto px-4 md:px-6 py-24">
-      <div class="flex flex-col justify-center divide-y divide-slate-200 [&>*]:py-16">
-          <div class="w-full max-w-3xl mx-auto">
-              <div class="-my-6">
-                  <div class="relative pl-8 sm:pl-32 py-6 group">
-                      <div class="font-medium text-indigo-500 mb-1 sm:mb-0">The origin</div>
-                      <div class="flex flex-col sm:flex-row items-start mb-1 group-last:before:hidden before:absolute before:left-2 sm:before:left-0 before:h-full before:px-px before:bg-slate-300 sm:before:ml-[6.5rem] before:self-start before:-translate-x-1/2 before:translate-y-3 after:absolute after:left-2 sm:after:left-0 after:w-2 after:h-2 after:bg-indigo-600 after:border-4 after:box-content after:border-slate-50 after:rounded-full sm:after:ml-[6.5rem] after:-translate-x-1/2 after:translate-y-1.5">
-                          <time class="sm:absolute left-0 translate-y-0.5 inline-flex items-center justify-center text-xs font-semibold uppercase w-20 h-6 mb-3 sm:mb-0 text-emerald-600 bg-emerald-100 rounded-full">May, 2020</time>
-                          <div class="text-xl font-bold text-slate-900">Acme was founded in Milan, Italy</div>
-                      </div>
-                      <div class="text-slate-500">Pretium lectus quam id leo. Urna et pharetra pharetra massa massa. Adipiscing enim eu neque aliquam vestibulum morbi blandit cursus risus.</div>
-                  </div>
-              </div>
-          </div>
+<div class="min-h-screen bg-gray-50">
+    <!-- Sidebar -->
+    {% include "nav3.html" %}
 
-      </div>
-  </div> -->
-  <div class="w-full max-w-6xl mx-auto px-4 md:px-6 py-24">
-    <div class="flex flex-col justify-center divide-y divide-slate-200 [&>*]:py-16">
-        <div class="w-full max-w-3xl mx-auto">
-            <!-- Vertical Timeline #1 -->
-            <div class="-my-6">
-                {% for event_id, data in event_data.items() %}
-                <!-- Event -->
-                <div class="relative pl-8 sm:pl-32 py-6 group">
-                    <!-- Event label -->
-                    <div class="font-medium text-indigo-500 mb-1 sm:mb-0">{{ data['event'][1] }}</div>
-                    <!-- Event line (::before) ~ Date ~ Title ~ Circle marker (::after) -->
-                    <div class="flex flex-col sm:flex-row items-start mb-1 group-last:before:hidden before:absolute before:left-2 sm:before:left-0 before:h-full before:px-px before:bg-slate-300 sm:before:ml-[6.5rem] before:self-start before:-translate-x-1/2 before:translate-y-3 after:absolute after:left-2 sm:after:left-0 after:w-2 after:h-2 after:bg-indigo-600 after:border-4 after:box-content after:border-slate-50 after:rounded-full sm:after:ml-[6.5rem] after:-translate-x-1/2 after:translate-y-1.5">
-                        <time class="sm:absolute left-0 translate-y-0.5 inline-flex items-center justify-center text-xs font-semibold uppercase w-20 h-6 mb-3 sm:mb-0 text-emerald-600 bg-emerald-100 rounded-full">{{ data['event'][2] }}</time>
-                        <div class="text-xl font-bold text-slate-900">{{ data['event'][1] }}</div>
-                    </div>
-                    <!-- Event content -->
-                    <div class="text-slate-500">
-                        {{ data['event'][3] }} <!-- Event description -->
-                    </div>
-                    <!-- Associated event schedules -->
-                    <div class="ml-16 mt-4">
-                        {% for schedule in data['schedules'] %}
-                        <div class="text-gray-700">
-                            <div class="font-semibold">{{ schedule[2] }}</div> <!-- Programme name -->
-                            <div>Host: {{ schedule[4] }}</div> <!-- Host name -->
-                            <div>Participants: {{ schedule[3] }}</div> <!-- No. of participants -->
-                            <div>Status: {{ schedule[6] }}</div> <!-- Status -->
-                        </div>
-                        {% endfor %}
-                    </div>
-                    <!-- Associated venue data -->
+    <!-- Main content -->
+    <div class="p-4 sm:ml-64">
+        <div class="p-4 border-2 border-gray-200 rounded-lg dark:border-gray-700 mt-14">
+            <!-- Stats Overview -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div class="bg-white rounded-lg shadow p-4">
+                    <h3 class="text-lg font-semibold text-gray-700">Total Events</h3>
+                    <p class="text-3xl font-bold text-indigo-600">{{ stats.total_events }}</p>
                 </div>
-                {% endfor %}
+                <div class="bg-white rounded-lg shadow p-4">
+                    <h3 class="text-lg font-semibold text-gray-700">Active Schedules</h3>
+                    <p class="text-3xl font-bold text-green-600">{{ stats.active_schedules }}</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-4">
+                    <h3 class="text-lg font-semibold text-gray-700">Total Participants</h3>
+                    <p class="text-3xl font-bold text-blue-600">{{ stats.total_participants }}</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-4">
+                    <h3 class="text-lg font-semibold text-gray-700">Available Venues</h3>
+                    <p class="text-3xl font-bold text-purple-600">{{ stats.total_venues }}</p>
+                </div>
             </div>
-            <!-- End: Vertical Timeline #1 -->
+
+            <!-- Events Dashboard -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Events Overview</h2>
+                </div>
+
+                <!-- Event Navigation Controls -->
+                <div class="flex justify-between items-center mb-6">
+                    <button id="prevEvent" class="event-navigation p-2 rounded-full bg-gray-100 hover:bg-gray-200">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <div id="eventCounter" class="text-sm font-medium text-gray-600"></div>
+                    <button id="nextEvent" class="event-navigation p-2 rounded-full bg-gray-100 hover:bg-gray-200">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Display Events -->
+                <div id="eventContainer">
+                    {% set today = now().strftime('%Y-%m-%d') %}
+                    
+                    {# Sort events into categories #}
+                    {% set upcoming_events = {} %}
+                    {% set ongoing_events = {} %}
+                    {% set completed_events = {} %}
+                    
+                    {% for event_id, data in event_data.items() %}
+                        {% if data.event.S_Date and data.event.E_Date %}
+                            {% if today < data.event.S_Date %}
+                                {% set _ = upcoming_events.update({event_id: data}) %}
+                            {% elif today > data.event.E_Date %}
+                                {% set _ = completed_events.update({event_id: data}) %}
+                            {% else %}
+                                {% set _ = ongoing_events.update({event_id: data}) %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for category, events, title, badge_color in [
+                        ('ongoing', ongoing_events, 'Ongoing Events', 'green'),
+                        ('upcoming', upcoming_events, 'Upcoming Events', 'blue'),
+                        ('completed', completed_events, 'Completed Events', 'gray')
+                    ] %}
+                        {% if events %}
+                        <div class="event-section mb-8 last:mb-0" data-category="{{ category }}">
+                            <div class="flex items-center gap-3 mb-4">
+                                <h3 class="text-xl font-semibold text-gray-800">{{ title }}</h3>
+                                <span class="px-3 py-1 text-sm font-medium text-{{ badge_color }}-800 bg-{{ badge_color }}-100 rounded-full">
+                                    {{ events|length }} {{ 'event' if events|length == 1 else 'events' }}
+                                </span>
+                            </div>
+                            
+                            <div class="events-grid">
+                                {% for event_id, data in events.items() %}
+                                <div class="event-card hidden bg-white rounded-lg border border-gray-200 p-6 transition-all hover:shadow-lg">
+                                    <div class="flex flex-col gap-4 mb-6">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <h3 class="text-xl font-bold text-gray-900">{{ data.event.Name }}</h3>
+                                                {% if category == 'upcoming' %}
+                                                <span class="px-3 py-1 text-sm font-semibold text-blue-800 bg-blue-100 rounded-full">
+                                                    Not Started
+                                                </span>
+                                                {% elif category == 'ongoing' %}
+                                                <span class="px-3 py-1 text-sm font-semibold text-green-800 bg-green-100 rounded-full">
+                                                    Ongoing
+                                                </span>
+                                                {% else %}
+                                                <span class="px-3 py-1 text-sm font-semibold text-gray-800 bg-gray-100 rounded-full">
+                                                    Completed
+                                                </span>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                                <!-- Event Details -->
+                                                <div>
+                                                    <p class="text-sm font-medium text-gray-600">Start Date</p>
+                                                    <p class="text-gray-900">{{ data.event.S_Date }}</p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-medium text-gray-600">End Date</p>
+                                                    <p class="text-gray-900">{{ data.event.E_Date }}</p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-medium text-gray-600">Hosting Department</p>
+                                                    <p class="text-gray-900">{{ data.event.Hosting_Dept }}</p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-medium text-gray-600">Starting Capital</p>
+                                                    <p class="text-gray-900">{{ data.event.Starting_Capital }}</p>
+                                                </div>
+                                                
+                                                <!-- Venue Details if available -->
+                                                {% if data.venue %}
+                                                <div>
+                                                    <p class="text-sm font-medium text-gray-600">Venue</p>
+                                                    <p class="text-gray-900">{{ data.venue.Name }}</p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-medium text-gray-600">Address</p>
+                                                    <p class="text-gray-900">{{ data.venue.Address }}</p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-medium text-gray-600">Venue Capacity</p>
+                                                    <p class="text-gray-900">{{ data.venue.Capacity }}</p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-medium text-gray-600">Venue Rent</p>
+                                                    <p class="text-gray-900">{{ data.venue.Rent }}</p>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- All Schedules -->
+                                    {% if data.schedules %}
+                                    <div class="border-t pt-4">
+                                        <h4 class="text-lg font-semibold text-gray-800 mb-4">Event Schedules</h4>
+                                        <div class="space-y-3">
+                                            {% for schedule in data.schedules %}
+                                            <div class="flex flex-col sm:flex-row justify-between gap-2 p-4 bg-gray-50 rounded-lg">
+                                                <div>
+                                                    <p class="font-medium text-gray-900">{{ schedule.Programme_Name }}</p>
+                                                    <p class="text-sm text-gray-600">Host: {{ schedule.Host_Name }}</p>
+                                                </div>
+                                                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                                                    <span class="text-sm text-gray-700">
+                                                        Participants: {{ schedule.No_of_Participants }}
+                                                    </span>
+                                                    <span class="text-sm text-gray-700">
+                                                        Required: {{ schedule.Amount_Required }}
+                                                    </span>
+                                                    <span class="px-2 py-1 text-xs font-medium {% if schedule.Status %}text-green-800 bg-green-100{% else %}text-gray-800 bg-gray-100{% endif %} rounded">
+                                                        {{ 'Active' if schedule.Status else 'Inactive' }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="border-t pt-4">
+                                        <p class="text-gray-600 text-center">No schedules available for this event</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
         </div>
     </div>
 </div>
-</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const eventCards = document.querySelectorAll('.event-card');
+    let currentEventIndex = 0;
+    
+    function updateEventDisplay() {
+        eventCards.forEach(card => card.classList.add('hidden'));
+        
+        if (eventCards[currentEventIndex]) {
+            eventCards[currentEventIndex].classList.remove('hidden');
+            
+            const counter = document.getElementById('eventCounter');
+            counter.textContent = `Event ${currentEventIndex + 1} of ${eventCards.length}`;
+        }
+    }
+    
+    updateEventDisplay();
+    
+    document.getElementById('prevEvent').addEventListener('click', () => {
+        if (currentEventIndex > 0) {
+            currentEventIndex--;
+            updateEventDisplay();
+        }
+    });
+    
+    document.getElementById('nextEvent').addEventListener('click', () => {
+        if (currentEventIndex < eventCards.length - 1) {
+            currentEventIndex++;
+            updateEventDisplay();
+        }
+    });
+});
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
 {% endblock %}

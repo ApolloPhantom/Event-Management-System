@@ -104,3 +104,4 @@ add V_Id int; */
 Img_Link = "C:\Users\shyam\OneDrive\Desktop\SE_Project\static\68585.jpg"
 where E_Id in (1,2); */
 
+delete from Budget where B_Id = 311;

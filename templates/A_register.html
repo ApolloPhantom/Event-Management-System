@@ -8,77 +8,50 @@ Attendee Registration
 {% endblock %}
 
 {% block main %}
-<nav class="bg-green-800">
-    <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-      <div class="relative flex h-16 items-center justify-between">
-        <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
-          <button type="button" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
-            <svg class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-          <div class="flex flex-shrink-0 items-center">
-            <img class="h-8 w-auto" src="/static/event.png" alt="Your Company">
+{% include "nav1.html" %}
+<section class="relative min-h-screen flex flex-col justify-center bg-slate-50 sm:px-6 lg:px-8">
+  <div class="relative mx-auto w-full max-w-lg bg-white px-8 pt-10 pb-8 shadow-xl ring-1 ring-gray-900/5 sm:rounded-lg sm:px-12 lg:px-16">
+      <div class="w-full">
+          <div class="text-center">
+              <h1 class="text-3xl font-semibold text-gray-900">Attendee Registration</h1>
+              <p class="mt-2 text-gray-500">Fill all the details</p>
           </div>
-          <div class="hidden sm:ml-6 sm:block">
-            <div class="flex space-x-4">
-              <a href="/S_register" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Sponsor Registration</a>
-              <a href="/S_Fund" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Sponsor Fund</a>
-              <a href="/S_Refund" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Sponsor Refund</a>
-              <a href="/Ticket" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Tickets</a>
-              <a href="/A_register" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Attendee Registration</a>
-              <a href="/O_home" class="absolute right-0 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Organizer Access</a>
-            </div>
+          <div class="mt-8">
+              <form action="/A_register" method="post">
+                  <div class="relative mt-6">
+                      <label for="name" class="text-base sm:text-lg">Name</label>
+                      <input type="text" name="name" id="name" class="peer mt-1 w-full border-2 border-gray-300 px-3 py-2 rounded-md focus:border-gray-500 focus:outline-none sm:text-sm md:text-base" required />
+                  </div>
+                  <div class="relative mt-6">
+                      <label for="phone" class="text-base sm:text-lg">Phone Number</label>
+                      <input type="number" name="phone" id="phone" class="peer mt-1 w-full border-2 border-gray-300 px-3 py-2 rounded-md focus:border-gray-500 focus:outline-none sm:text-sm md:text-base" required />
+                  </div>
+                  <div class="relative mt-6">
+                      <label for="email" class="text-base sm:text-lg">Email</label>
+                      <input type="email" name="email" id="email" class="peer mt-1 w-full border-2 border-gray-300 px-3 py-2 rounded-md focus:border-gray-500 focus:outline-none sm:text-sm md:text-base" required />
+                  </div>
+                  <div class="relative mt-6">
+                      <label for="event" class="text-base sm:text-lg">Events Available</label>
+                      <select name="event" id="event" class="peer mt-1 w-full border-2 border-gray-300 px-3 py-2 rounded-md focus:border-gray-500 focus:outline-none sm:text-sm md:text-base" required>
+                          {% for option in options %}
+                              <option value="{{ option[0] }}">Name: {{ option[1] }}</option>
+                          {% endfor %}
+                      </select>
+                  </div>
+                  <div class="relative mt-6">
+                      <label for="spec" class="text-base sm:text-lg">Attendee Type</label>
+                      <select name="spec" id="spec" class="peer mt-1 w-full border-2 border-gray-300 px-3 py-2 rounded-md focus:border-gray-500 focus:outline-none sm:text-sm md:text-base" required>
+                          <option value="attendee">Attendee</option>
+                          <option value="participant">Participant</option>
+                          <option value="guest">Guest</option>
+                      </select>
+                  </div>
+                  <div class="my-6">
+                      <button type="submit" id="submitBtn" class="w-full rounded-md bg-black px-3 py-4 text-white focus:bg-gray-600 focus:outline-none sm:text-sm md:text-base">Sign in</button>
+                  </div>
+              </form>
           </div>
-        </div>
       </div>
-    </div>
-</nav>
-<section class="relative min-h-screen flex flex-col justify-center bg-slate-50 overflow-hidden">
-    <div class="relative mx-auto w-full max-w-md bg-white px-6 pt-10 pb-8 shadow-xl ring-1 ring-gray-900/5 sm:rounded-xl sm:px-10">
-    <div class="w-full">
-        <div class="text-center">
-            <h1 class="text-3xl font-semibold text-gray-900">Attendee Registration</h1>
-            <p class="mt-2 text-gray-500">Fill all the details</p>
-        </div>
-        <div class="mt-5">
-            <form action="/A_register" method="post">
-                <div class="relative mt-6">
-                    <h1>Name</h1>
-                    <input type="text" name="name" id="name" class="peer mt-1 w-full border-b-2 border-gray-300 px-0 py-1 placeholder:text-transparent focus:border-gray-500 focus:outline-none" required />
-                </div>
-                <div class="relative mt-6">
-                    <h1>Phone Number</h1>
-                    <input type="number" name="phone" id="phone" class="peer peer mt-1 w-full border-b-2 border-gray-300 px-0 py-1 placeholder:text-transparent focus:border-gray-500 focus:outline-none" required />
-                </div>
-                <div class="relative mt-6">
-                    <h1>Email</h1>
-                    <input type="email" name="email" id="email" class="peer mt-1 w-full border-b-2 border-gray-300 px-0 py-1 placeholder:text-transparent focus:border-gray-500 focus:outline-none" required />
-                </div>
-                <div class="relative mt-6">
-                  <h1>Events Available:-</h1>
-                  <select name="event" id="event" class="peer mt-1 w-full border-b-2 border-gray-300 px-0 py-1 placeholder:text-transparent focus:border-gray-500 focus:outline-none"  required>
-                    {% for option in options %}
-                        <option value="{{ option[0] }}">Name:-{{ option[1] }}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-                <div class="relative mt-6">
-                  <h1>Attendee Type</h1>
-                  <select name="spec" id="spec" class="peer mt-1 w-full border-b-2 border-gray-300 px-0 py-1 placeholder:text-transparent focus:border-gray-500 focus:outline-none" required>
-                    <option value="attendee">Attendee</option>
-                    <option value="participant">Participant</option>
-                    <option value="guest">Guest</option>
-                  </select>
-                </div>
-                <div class="my-6">
-                    <button type = "submit" id = "submitBtn" class="w-full rounded-md bg-black px-3 py-4 text-white focus:bg-gray-600 focus:outline-none">Sign in</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+  </div>
 </section>
 {% endblock %}

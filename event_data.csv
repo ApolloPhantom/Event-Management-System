@@ -1,0 +1,11 @@
+E_Id,Name,S_Date,E_Date,Hosting_Dept,No_of_Schedules,Starting_Capital,V_Id
+11,Hackathon,2024-05-23,2024-08-13,Chemical Engineering,2,52825.08,105
+12,Science Expo,2024-01-22,2024-09-23,Chemical Engineering,5,50860.37,374
+3,Seminar,2024-05-21,2024-11-19,Chemical Engineering,5,66956.26,299
+4,Cultural Fest,2024-07-10,2024-11-16,Chemical Engineering,2,51676.99,446
+5,Seminar,2024-12-25,2024-12-31,Chemical Engineering,5,60834.47,243
+6,Seminar,2024-03-14,2024-06-15,Civil Engineering,4,16921.42,226
+7,Cultural Fest,2024-11-28,2024-12-15,Chemical Engineering,3,31090.64,475
+8,Science Expo,2024-06-18,2024-08-08,Electrical Engineering,2,58913.7,253
+9,Alumni Meet,2024-11-13,2024-12-24,Electrical Engineering,4,96962.86,347
+10,Annual Meeting,2024-06-11,2024-06-22,Computer Science,5,6150.44,201
