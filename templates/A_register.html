@@ -2,56 +2,155 @@
 
 {% block title %} 
 Attendee Registration 
-{%endblock%}
+{% endblock %}
 
 {% block style %}
 {% endblock %}
 
 {% block main %}
 {% include "nav1.html" %}
-<section class="relative min-h-screen flex flex-col justify-center bg-slate-50 sm:px-6 lg:px-8">
-  <div class="relative mx-auto w-full max-w-lg bg-white px-8 pt-10 pb-8 shadow-xl ring-1 ring-gray-900/5 sm:rounded-lg sm:px-12 lg:px-16">
-      <div class="w-full">
-          <div class="text-center">
-              <h1 class="text-3xl font-semibold text-gray-900">Attendee Registration</h1>
-              <p class="mt-2 text-gray-500">Fill all the details</p>
-          </div>
-          <div class="mt-8">
-              <form action="/A_register" method="post">
-                  <div class="relative mt-6">
-                      <label for="name" class="text-base sm:text-lg">Name</label>
-                      <input type="text" name="name" id="name" class="peer mt-1 w-full border-2 border-gray-300 px-3 py-2 rounded-md focus:border-gray-500 focus:outline-none sm:text-sm md:text-base" required />
-                  </div>
-                  <div class="relative mt-6">
-                      <label for="phone" class="text-base sm:text-lg">Phone Number</label>
-                      <input type="number" name="phone" id="phone" class="peer mt-1 w-full border-2 border-gray-300 px-3 py-2 rounded-md focus:border-gray-500 focus:outline-none sm:text-sm md:text-base" required />
-                  </div>
-                  <div class="relative mt-6">
-                      <label for="email" class="text-base sm:text-lg">Email</label>
-                      <input type="email" name="email" id="email" class="peer mt-1 w-full border-2 border-gray-300 px-3 py-2 rounded-md focus:border-gray-500 focus:outline-none sm:text-sm md:text-base" required />
-                  </div>
-                  <div class="relative mt-6">
-                      <label for="event" class="text-base sm:text-lg">Events Available</label>
-                      <select name="event" id="event" class="peer mt-1 w-full border-2 border-gray-300 px-3 py-2 rounded-md focus:border-gray-500 focus:outline-none sm:text-sm md:text-base" required>
-                          {% for option in options %}
-                              <option value="{{ option[0] }}">Name: {{ option[1] }}</option>
-                          {% endfor %}
-                      </select>
-                  </div>
-                  <div class="relative mt-6">
-                      <label for="spec" class="text-base sm:text-lg">Attendee Type</label>
-                      <select name="spec" id="spec" class="peer mt-1 w-full border-2 border-gray-300 px-3 py-2 rounded-md focus:border-gray-500 focus:outline-none sm:text-sm md:text-base" required>
-                          <option value="attendee">Attendee</option>
-                          <option value="participant">Participant</option>
-                          <option value="guest">Guest</option>
-                      </select>
-                  </div>
-                  <div class="my-6">
-                      <button type="submit" id="submitBtn" class="w-full rounded-md bg-black px-3 py-4 text-white focus:bg-gray-600 focus:outline-none sm:text-sm md:text-base">Sign in</button>
-                  </div>
-              </form>
-          </div>
-      </div>
-  </div>
-</section>
+
+<div class="bg-gray-100 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+                Choose Your Registration Type
+            </h2>
+            <p class="mt-4 text-xl text-gray-600">
+                Select the perfect tier for your event experience
+            </p>
+        </div>
+
+        <div class="mt-12 space-y-4 sm:mt-16 sm:space-y-0 sm:grid sm:grid-cols-3 sm:gap-6 lg:max-w-4xl lg:mx-auto xl:max-w-none xl:mx-0">
+            <!-- Visitor Tier -->
+            <div class="border border-gray-200 rounded-lg shadow-sm divide-y divide-gray-200 bg-white">
+                <div class="p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Visitor</h3>
+                    <p class="mt-4 text-sm text-gray-500">Perfect for those who want to explore the event</p>
+                    <p class="mt-8">
+                        <span class="text-4xl font-extrabold text-gray-900">$49</span>
+                        <span class="text-base font-medium text-gray-500">/person</span>
+                    </p>
+                    <a href="/A_register_V" class="mt-8 block w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold rounded-md py-2 text-sm text-center">
+                        Register as Visitor
+                    </a>
+                </div>
+                <div class="pt-6 pb-8 px-6">
+                    <ul class="mt-6 space-y-4">
+                        <li class="flex space-x-3">
+                            <svg class="flex-shrink-0 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-sm text-gray-500">Access to exhibition area</span>
+                        </li>
+                        <li class="flex space-x-3">
+                            <svg class="flex-shrink-0 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-sm text-gray-500">Event welcome kit</span>
+                        </li>
+                        <li class="flex space-x-3">
+                            <svg class="flex-shrink-0 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-sm text-gray-500">Refreshments</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Participant Tier -->
+            <div class="border border-gray-200 rounded-lg shadow-sm divide-y divide-gray-200 bg-white">
+                <div class="p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Participant</h3>
+                    <p class="mt-4 text-sm text-gray-500">For those who want to engage in activities</p>
+                    <p class="mt-8">
+                        <span class="text-4xl font-extrabold text-gray-900">$99</span>
+                        <span class="text-base font-medium text-gray-500">/person</span>
+                    </p>
+                    <a href="/A_register_P" class="mt-8 block w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold rounded-md py-2 text-sm text-center">
+                        Register as Participant
+                    </a>
+                </div>
+                <div class="pt-6 pb-8 px-6">
+                    <ul class="mt-6 space-y-4">
+                        <li class="flex space-x-3">
+                            <svg class="flex-shrink-0 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-sm text-gray-500">All Visitor benefits</span>
+                        </li>
+                        <li class="flex space-x-3">
+                            <svg class="flex-shrink-0 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-sm text-gray-500">Access to workshops</span>
+                        </li>
+                        <li class="flex space-x-3">
+                            <svg class="flex-shrink-0 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-sm text-gray-500">Networking sessions</span>
+                        </li>
+                        <li class="flex space-x-3">
+                            <svg class="flex-shrink-0 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-sm text-gray-500">Certificate of participation</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Guest Tier (Highlighted) -->
+            <div class="border-2 border-blue-500 rounded-lg shadow-xl divide-y divide-gray-200 bg-white">
+                <div class="p-6">
+                    <h3 class="text-lg leading-6 font-medium text-blue-500">Guest</h3>
+                    <p class="mt-4 text-sm text-gray-500">Premium access with exclusive benefits</p>
+                    <p class="mt-8">
+                        <span class="text-4xl font-extrabold text-gray-900">$199</span>
+                        <span class="text-base font-medium text-gray-500">/person</span>
+                    </p>
+                    <a href="/A_register_G" class="mt-8 block w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md py-2 text-sm text-center">
+                        Register as Guest
+                    </a>
+                </div>
+                <div class="pt-6 pb-8 px-6">
+                    <ul class="mt-6 space-y-4">
+                        <li class="flex space-x-3">
+                            <svg class="flex-shrink-0 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-sm text-gray-500">All Participant benefits</span>
+                        </li>
+                        <li class="flex space-x-3">
+                            <svg class="flex-shrink-0 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-sm text-gray-500">VIP seating</span>
+                        </li>
+                        <li class="flex space-x-3">
+                            <svg class="flex-shrink-0 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-sm text-gray-500">Exclusive networking dinner</span>
+                        </li>
+                        <li class="flex space-x-3">
+                            <svg class="flex-shrink-0 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-sm text-gray-500">1-on-1 sessions with speakers</span>
+                        </li>
+                        <li class="flex space-x-3">
+                            <svg class="flex-shrink-0 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-sm text-gray-500">Priority access to all sessions</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

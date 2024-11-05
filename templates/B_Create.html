@@ -26,7 +26,7 @@ Budget Creation
                   <label for="event">Event_ID</label>
                   <select name="event" id="event" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50">
                       {% for option in options %}
-                          <option value="{{ option[0] }}">Name:-{{ option[1] }}</option>
+                          <option value="{{ option['E_Id'] }}">Name:-{{ option['Name'] }}</option>
                       {% endfor %}
                   </select>
                 </div>

@@ -1,8 +1,9 @@
 import os
-from datetime import datetime,timedelta
+from datetime import datetime,timedelta,date
+import random
 from typing import *
 from functools import wraps
-from fastapi import FastAPI, Request, Response, HTTPException, Depends
+from fastapi import FastAPI, Request, Response, HTTPException, Depends,Form
 from fastapi.responses import RedirectResponse,JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
@@ -17,6 +18,9 @@ import requests
 from typing import Optional, Dict
 import jwt
 from dotenv import load_dotenv
+from fpdf import FPDF
+from pydantic import BaseModel, EmailStr
+import uuid
 
 load_dotenv()
 base_path = os.path.dirname(os.path.abspath(__file__))
@@ -47,7 +51,10 @@ app.add_middleware(
 #     os.getenv("SUPABASE_KEY")
 # )
 
-
+supabase: Client = create_client(
+    "https://mfpblhjctozquhebtuiy.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mcGJsaGpjdG96cXVoZWJ0dWl5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyOTU1OTY0NCwiZXhwIjoyMDQ1MTM1NjQ0fQ.3Hkko-Pq7ksBbv7Qa7q-0UrOAeJAuNMNChKqBO2l7sk"
+)
 
 security = HTTPBearer()
 
@@ -338,38 +345,48 @@ async def budget_dashboard(request: Request):
 
         # Create lookup dictionaries for easier joining
         event_lookup = {event["E_Id"]: event for event in events}
+        event_name_lookup = {event["Name"]: event for event in events}
 
         # Process budget data to include event names
         budget_data = []
         events_with_budget = set()
         for budget in budgets:
             event = event_lookup.get(budget["E_Id"])
-            budget_data.append({
-                "B_Id": budget["B_Id"],
-                "Amount": budget["Amount"],
-                "E_Id": budget["E_Id"],
-                "EventName": event["Name"] if event else "Unassigned"
-            })
             if event:
-                events_with_budget.add(budget["E_Id"])
+                budget_amount = budget["Amount"] or 0
+                sponsor_funded = budget["Sponsor_Funded_Amount"] or 0
+                budget_data.append({
+                    "Amount": budget_amount,
+                    "EventName": event["Name"],
+                    "SponsorFundedAmount": sponsor_funded,
+                    "TotalAmount": budget_amount + sponsor_funded  # Add total calculation
+                })
+                events_with_budget.add(event["Name"])
 
         # Process sponsor data to include event names
         sponsor_data = []
         for sponsor in sponsors:
             event = event_lookup.get(sponsor["E_Id"])
-            sponsor_data.append({
-                "S_Id": sponsor["S_Id"],
-                "Name": sponsor["Name"],
-                "Fund": sponsor["Fund"],
-                "Company_Name": sponsor["Company_Name"],
-                "E_Id": sponsor["E_Id"],
-                "EventName": event["Name"] if event else "Unassigned"
-            })
+            if event:
+                sponsor_data.append({
+                    "Name": sponsor["Name"],
+                    "Fund": sponsor["Fund"],
+                    "Company_Name": sponsor["Company_Name"],
+                    "EventName": event["Name"]
+                })
 
-        # Find events without budget
+        # Find events without budget using names
         events_without_budget = [
-            event for event in events 
-            if event["E_Id"] not in events_with_budget
+            {
+                "Name": event["Name"],
+                "S_Date": event["S_Date"],
+                "E_Date": event["E_Date"],
+                "Hosting_Dept": event["Hosting_Dept"],
+                "No_of_Schedules": event["No_of_Schedules"],
+                "Starting_Capital": event["Starting_Capital"]
+            }
+            for event in events 
+            if event["Name"] not in events_with_budget
         ]
 
         # Calculate metrics
@@ -393,7 +410,7 @@ async def budget_dashboard(request: Request):
             event_name = sponsor.get("EventName", "Unassigned")
             if event_name not in event_sponsors:
                 event_sponsors[event_name] = set()
-            event_sponsors[event_name].add(sponsor["S_Id"])
+            event_sponsors[event_name].add(sponsor["Name"])  # Use sponsor name instead of ID
             event_funds[event_name] = event_funds.get(event_name, 0) + fund
 
         # Convert event sponsors to counts
@@ -439,6 +456,700 @@ async def budget_dashboard(request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.api_route("/O_register",methods=["GET","POST"])
-def o_register(request:Request):
-    return 1
+@app.get("/O_register", response_class=HTMLResponse)
+async def o_register_get(request: Request):
+    if request.session.get("o_id"):
+        return RedirectResponse(url="/O_home")
+    return templates.TemplateResponse("O_register.html", {"request": request})
+
+@app.post("/O_register")
+async def o_register_post(
+    request: Request,
+    name: str = Form(...),
+    password: Optional[str] = Form(None),
+    s_key: int = Form(...)
+):
+    try:
+        response = supabase.table("Organizer") \
+            .select("*") \
+            .eq("Name", name) \
+            .eq("Password", password) \
+            .eq("Security_Key", s_key) \
+            .execute()
+            
+        if len(response.data) > 0:
+            return ""
+
+        existing_ids = supabase.table("Organizer") \
+            .select("O_Id") \
+            .execute()
+
+        existing_id_list = [record["O_Id"] for record in existing_ids.data]
+
+        gen_id = random.randint(1, 1000)
+        while gen_id in existing_id_list:
+            gen_id = random.randint(1, 1000)
+
+        response = supabase.table("Organizer") \
+            .insert({
+                "O_Id": gen_id,
+                "Name": name,
+                "Password": password,
+                "Security_Key": s_key
+            }) \
+            .execute()
+
+        request.session["o_id"] = gen_id
+        request.session["name"] = name
+        
+        return str(gen_id)
+
+    except Exception as e:
+        print("Error:", type(e).__name__, str(e))
+        raise HTTPException(status_code=500, detail="Registration failed")
+    
+@app.get("/O_login", response_class=HTMLResponse)
+async def o_login_get(request: Request):
+    # Redirect if already logged in
+    if request.session.get("o_id"):
+        return RedirectResponse(url="/O_home")
+    return templates.TemplateResponse("O_login.html", {"request": request})
+
+@app.post("/O_login")
+async def o_login_post(
+    request: Request,
+    id: int = Form(...),
+    password: str = Form(...)
+):
+    try:
+        response = supabase.table("Organizer") \
+            .select("*") \
+            .eq("O_Id", id) \
+            .eq("Password", password) \
+            .execute()
+
+        if not response.data:
+            return "Error"
+
+        organizer = response.data[0]
+        request.session["o_id"] = organizer["O_Id"]
+        request.session["name"] = organizer["Name"]
+        return "Success"
+
+    except ValueError as ve:
+        print("Validation Error:", str(ve))
+        return "Error"
+    except Exception as e:
+        print("Error:", type(e).__name__, str(e))
+        return "Error"
+
+@app.get("/O_logout")
+@o_login_required
+async def o_logout(request:Request):
+    request.session.clear()
+    return RedirectResponse(url="/O_login")
+
+@app.get("/O_change", response_class=HTMLResponse)
+@o_login_required
+async def change_password_page(request: Request):
+    return templates.TemplateResponse(
+        "O_change_password.html",
+        {"request": request}
+    )
+
+@app.post("/O_change")
+@o_login_required
+async def change_password(
+    request: Request,
+    password: str = Form(...),
+    password1: str = Form(...),
+    s_key: str = Form(...),
+):
+    try:
+        # Check security key
+        result = supabase.table("Organizer") \
+            .select("O_Id") \
+            .eq("O_Id", request.session.get("o_id")) \
+            .eq("Security_Key", s_key) \
+            .execute()
+        
+        if not result.data:
+            return ""
+
+        # Update password
+        update_result = supabase.table("Organizer") \
+            .update({"Password": password}) \
+            .eq("O_Id", request.session.get("o_id")) \
+            .execute()
+
+        if update_result.data:
+            return "Success"
+        return ""
+
+    except Exception as e:
+        print(f"Error:- {type(e).__name__}")
+        return ""
+
+@app.get("/E_register", response_class=HTMLResponse)
+async def get_event_register(request: Request):
+    try:
+        # Query all venues from Supabase
+        response = supabase.table('Venue').select("*").execute()
+        venues = response.data
+        
+        return templates.TemplateResponse(
+            "E_register.html",
+            {"request": request, "options": venues}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/E_register")
+async def create_event(
+    e_name: str = Form(...),
+    start_date: date = Form(...),
+    end_date: date = Form(...),
+    host_dept: str = Form(...),
+    schedule: int = Form(...),
+    s_cap: float = Form(...),
+    venue: int = Form(...)
+):
+    try:
+        # Check if event already exists
+        existing_event = supabase.table('Event').select("*").eq('Name', e_name)\
+            .eq('S_Date', start_date)\
+            .eq('E_Date', end_date)\
+            .eq('Hosting_Dept', host_dept)\
+            .eq('No_of_Schedules', schedule)\
+            .eq('Starting_Capital', s_cap)\
+            .execute()
+
+        if existing_event.data:
+            return ""
+
+        # Insert new event
+        new_event = {
+            "Name": e_name,
+            "S_Date": str(start_date),
+            "E_Date": str(end_date),
+            "Hosting_Dept": host_dept,
+            "No_of_Schedules": schedule,
+            "Starting_Capital": s_cap,
+            "V_Id": venue
+        }
+        
+        response = supabase.table('Event').insert(new_event).execute()
+        
+        if response.data:
+            # Return the generated E_Id
+            return str(response.data[0]['E_Id'])
+        else:
+            return ""
+
+    except Exception as e:
+        print(f"Error:- {type(e).__name__}")
+        return ""
+
+@app.get("/V_register", response_class=HTMLResponse)
+async def get_venue_register(request: Request):
+    return templates.TemplateResponse("V_register.html", {"request": request})
+
+@app.post("/V_register")
+async def create_venue(
+    v_name: str = Form(...),
+    address: str = Form(...),
+    rent: int = Form(...),
+    cap: int = Form(...)
+):
+    try:
+        # Check if venue already exists
+        existing_venue = supabase.table("Venue") \
+            .select("*") \
+            .eq("Name", v_name) \
+            .eq("Address", address) \
+            .eq("Rent", rent) \
+            .eq("Capacity", cap) \
+            .execute()
+
+        if len(existing_venue.data) > 0:
+            return ""  # Return empty string if venue already exists
+
+        # Insert new venue
+        result = supabase.table("Venue") \
+            .insert({
+                "Name": v_name,
+                "Address": address,
+                "Rent": rent,
+                "Capacity": cap
+            }) \
+            .execute()
+
+        # If insertion successful, return the generated V_Id
+        if result.data and len(result.data) > 0:
+            return str(result.data[0]["V_Id"])
+        else:
+            return ""
+
+    except Exception as e:
+        print(f"Error:- {type(e).__name__}")
+        print(f"Error details: {str(e)}")
+        return ""
+    
+@app.get("/E_schedule")
+async def get_event_schedule(request: Request):
+    try:
+        # Fetch all events from the Event table
+        response = supabase.table("Event").select("*").execute()
+        events = response.data
+        
+        return templates.TemplateResponse(
+            "E_schedule.html",
+            {"request": request, "options": events}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/E_schedule")
+async def create_event_schedule(
+    event: int = Form(...),
+    p_name: str = Form(...),
+    part: int = Form(...),
+    h_name: str = Form(...),
+    a_req: int = Form(...),
+    stat: str = Form(...)
+):
+    try:
+        # Convert Y/N to boolean
+        status_bool = True if stat.upper() == 'Y' else False
+        
+        # Check for existing schedule with same details
+        existing = supabase.table("Event_Schedule") \
+            .select("*") \
+            .eq("E_Id", event) \
+            .eq("Programme_Name", p_name) \
+            .eq("Host_Name", h_name) \
+            .eq("Amount_Required", a_req) \
+            .execute()
+        
+        if existing.data:
+            return JSONResponse(content="", status_code=400)
+        
+        # Check number of schedules
+        current_schedules = supabase.table("Event_Schedule") \
+            .select("*") \
+            .eq("E_Id", event) \
+            .execute()
+            
+        event_details = supabase.table("Event") \
+            .select("No_of_Schedules") \
+            .eq("E_Id", event) \
+            .execute()
+            
+        if len(current_schedules.data) >= event_details.data[0]["No_of_Schedules"]:
+            return JSONResponse(content="", status_code=400)
+        
+        # Insert new schedule
+        # Note: ES_Id is auto-generated by Supabase
+        new_schedule = supabase.table("Event_Schedule") \
+            .insert({
+                "E_Id": event,
+                "Programme_Name": p_name,
+                "No_of_Participants": part,
+                "Host_Name": h_name,
+                "Amount_Required": a_req,
+                "Status": status_bool
+            }) \
+            .execute()
+            
+        if new_schedule.data:
+            # Return the generated ES_Id
+            return JSONResponse(
+                content=str(new_schedule.data[0]["ES_Id"]), 
+                status_code=200
+            )
+        else:
+            return JSONResponse(content="", status_code=400)
+            
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return JSONResponse(content="", status_code=500)
+
+
+@app.get("/B_create", response_class=HTMLResponse)
+async def get_budget_form(request: Request):
+    try:
+        # Fetch all events from Supabase
+        response = supabase.table("Event").select("*").execute()
+        events = response.data
+        
+        return templates.TemplateResponse(
+            "B_Create.html",
+            {"request": request, "options": events}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/B_create")
+async def create_budget(
+    event: int = Form(...),
+    a_req: float = Form(...)
+):
+    try:
+        # Insert new budget record
+        response = supabase.table("Budget").insert({
+            "E_Id": event,
+            "Amount": a_req,
+            "Sponsor_Funded_Amount": 0
+        }).execute()
+        
+        if response.data:
+            return response.data[0]["E_Id"]
+        return ""
+        
+    except Exception as e:
+        print(f"Error: {type(e).__name__} - {str(e)}")
+        return ""
+
+@app.get("/S_register",response_class=HTMLResponse)
+async def get_sponsor_register(request: Request):
+    try:
+        response = supabase.table('Event').select("*").execute()
+        events = response.data
+        return templates.TemplateResponse("S_register.html", {"request": request,"options": events})
+    except Exception as e:
+         raise HTTPException(status_code=500, detail=str(e))
+     
+
+@app.post("/S_register")
+async def create_sponsor(
+    request: Request,
+    name: str = Form(...),
+    fund: float = Form(...),
+    c_name: str = Form(...),
+    event: int = Form(...),
+):
+    try:
+        # Store registration data in session
+        request.session["sponsor_data"] = {
+            "Name": name,
+            "Fund": fund,
+            "Company_Name": c_name,
+            "E_Id": event
+        }
+        
+        # Redirect to payment portal
+        return RedirectResponse(url="/Portal", status_code=303)
+        
+    except Exception as e:
+        print(f"Error: {type(e).__name__} - {str(e)}")
+        raise HTTPException(status_code=500, detail="Registration failed")
+
+@app.post("/S_Payment")
+async def process_payment(
+    request: Request,
+    b_id: int = Form(...),
+    pin: int = Form(...)
+):
+    try:
+        sponsor_data = request.session.get("sponsor_data")
+        if not sponsor_data:
+            raise HTTPException(status_code=400, detail="No pending registration found")
+
+        bank_data = supabase.table("Bank").select("*").eq("Bank_Id", b_id).execute()
+        
+        if not bank_data.data:
+            raise HTTPException(status_code=400, detail="Invalid bank details")
+            
+        bank = bank_data.data[0]
+        if bank["PIN"] != pin:
+            raise HTTPException(status_code=400, detail="Invalid PIN")
+        
+        if bank["Total_Amount"] < sponsor_data["Fund"]:
+            raise HTTPException(status_code=400, detail="Insufficient funds")
+
+        # Begin transaction
+        transaction_id = f"TXN{datetime.now().strftime('%Y%m%d')}{random.randint(1000, 9999)}"
+        
+        # Update bank balance
+        new_balance = bank["Total_Amount"] - sponsor_data["Fund"]
+        supabase.table("Bank").update({"Total_Amount": new_balance}).eq("Bank_Id", b_id).execute()
+        
+        # Get bank name for receipt
+        bank_name = supabase.table("Bank").select("Name").eq("Bank_Id", b_id).execute()
+        
+        # Update Budget table
+        budget_data = supabase.table("Budget").select("*").eq("E_Id", sponsor_data["E_Id"]).execute()
+        
+        if budget_data.data:
+            current_sponsored_amount = budget_data.data[0].get("Sponsor_Funded_Amount") or 0
+            new_sponsored_amount = current_sponsored_amount + sponsor_data["Fund"]
+            
+            supabase.table("Budget").update({
+                "Sponsor_Funded_Amount": new_sponsored_amount
+            }).eq("E_Id", sponsor_data["E_Id"]).execute()
+        else:
+            # Create new budget record if it doesn't exist
+            supabase.table("Budget").insert({
+                "E_Id": sponsor_data["E_Id"],
+                "Amount": 0,  # Initial budget amount
+                "Sponsor_Funded_Amount": sponsor_data["Fund"]
+            }).execute()
+        
+        # Generate receipt
+        receipt = generate_receipt(
+            transaction_id=transaction_id,
+            sponsor_name=sponsor_data["Name"],
+            company_name=sponsor_data["Company_Name"],
+            amount=sponsor_data["Fund"],
+            bank_id=bank_name.data[0]['Name'],
+            date=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        )
+        supabase.table("Receipt").insert({
+            "Transaction_Id": transaction_id,
+            "Sponsor_Name": sponsor_data["Name"],
+            "Company_Name": sponsor_data["Company_Name"],
+            "Amount": sponsor_data["Fund"],
+            "Bank_Name": bank_name.data[0]['Name'],
+            "Transaction_Date": datetime.now().isoformat() 
+        }).execute()
+        
+        # Insert sponsor data
+        supabase.table("Sponsor").insert(sponsor_data).execute()
+        
+        # Clear session
+        request.session.pop("sponsor_data", None)
+        
+        return HTMLResponse(content=receipt, status_code=200)
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error: {type(e).__name__} - {str(e)}")
+        raise HTTPException(status_code=500, detail="Payment processing failed")
+
+@app.get("/Portal")
+async def payment_portal(request: Request):
+    sponsor_data = request.session.get("sponsor_data")
+    
+    if not sponsor_data:
+        return RedirectResponse(url="/S_register")
+    return templates.TemplateResponse(
+        "Portal.html",
+        {
+            "request": request,
+            "amount": sponsor_data["Fund"],
+            "company": sponsor_data["Company_Name"],
+            "sponsor_name": sponsor_data["Name"]
+        }
+    )
+
+def generate_receipt(transaction_id: str, sponsor_name: str, company_name: str, 
+                    amount: float, bank_id: int, date: str) -> str:
+    receipt_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            .receipt-container {{
+                max-width: 600px;
+                margin: 20px auto;
+                padding: 20px;
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                font-family: Arial, sans-serif;
+            }}
+            .receipt-header {{
+                text-align: center;
+                margin-bottom: 20px;
+            }}
+            .receipt-details {{
+                margin-bottom: 15px;
+            }}
+            .receipt-row {{
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 10px;
+            }}
+            .success-message {{
+                color: green;
+                text-align: center;
+                font-weight: bold;
+                margin: 20px 0;
+            }}
+            @media print {{
+                .no-print {{
+                    display: none;
+                }}
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="receipt-container">
+            <div class="receipt-header">
+                <h2>Payment Receipt</h2>
+                <div class="success-message">Payment Successful!</div>
+            </div>
+            
+            <div class="receipt-details">
+                <div class="receipt-row">
+                    <span>Transaction ID:</span>
+                    <span>{transaction_id}</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Date:</span>
+                    <span>{date}</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Sponsor Name:</span>
+                    <span>{sponsor_name}</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Company Name:</span>
+                    <span>{company_name}</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Amount Paid:</span>
+                    <span>${amount:.2f}</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Bank Name:</span>
+                    <span>{bank_id}</span>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;" class="no-print">
+                <button onclick="window.print()">Print Receipt</button>
+                <button onclick="window.location.href='/'">Return to Home</button>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return receipt_html
+
+
+@app.get("/S_Refund", response_class=HTMLResponse)
+async def get_refund_form(request: Request):
+    try:
+        return templates.TemplateResponse(
+            "S_Refund.html",
+            {"request": request}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/S_Refund")
+async def process_refund(
+    request: Request,
+    transaction_id: str = Form(...),
+    sponsor_name: str = Form(...),
+    company_name: str = Form(...),
+    amount: float = Form(...),
+    bank_name: str = Form(...),
+    transaction_date: str = Form(...)
+):
+    try:
+        # Convert string date to datetime
+        trans_date = datetime.strptime(transaction_date, '%Y-%m-%d')
+        
+        # Verify receipt exists with all provided details
+        receipt = supabase.table("Receipt").select("*")\
+            .eq("Transaction_Id", transaction_id)\
+            .eq("Sponsor_Name", sponsor_name)\
+            .eq("Company_Name", company_name)\
+            .eq("Amount", amount)\
+            .eq("Bank_Name", bank_name)\
+            .single().execute()
+        
+        if not receipt.data:
+            return templates.TemplateResponse(
+                "S_Refund.html",
+                {
+                    "request": request, 
+                    "error": "No transaction found with these details",
+                    "values": {
+                        "transaction_id": transaction_id,
+                        "sponsor_name": sponsor_name,
+                        "company_name": company_name,
+                        "amount": amount,
+                        "bank_name": bank_name,
+                        "transaction_date": transaction_date
+                    }
+                }
+            )
+
+        # Show bank details form if verification successful
+        return templates.TemplateResponse(
+            "bank_details.html",
+            {
+                "request": request,
+                "transaction_id": transaction_id,
+                "amount": amount,
+                "bank_name": bank_name
+            }
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/process_bank_details")
+async def process_bank_details(
+    request: Request,
+    bank_id: int = Form(...),
+    pin: int = Form(...),
+    transaction_id: str = Form(...)
+):
+    try:
+        # Verify bank details
+        bank = supabase.table("Bank").select("*")\
+            .eq("Bank_Id", bank_id)\
+            .eq("PIN", pin)\
+            .single().execute()
+        
+        if not bank.data:
+            return templates.TemplateResponse(
+                "bank_details.html",
+                {
+                    "request": request, 
+                    "error": "Invalid bank details",
+                    "transaction_id": transaction_id
+                }
+            )
+
+        # Get receipt details
+        receipt = supabase.table("Receipt").select("*")\
+            .eq("Transaction_Id", transaction_id)\
+            .single().execute()
+        
+        refund_amount = receipt.data["Amount"]
+
+        # Update bank balance
+        supabase.table("Bank").update({"Total_Amount": bank.data["Total_Amount"] + refund_amount})\
+            .eq("Bank_Id", bank_id).execute()
+
+        # Delete sponsor record
+        supabase.table("Sponsor").delete()\
+            .eq("Name", receipt.data["Sponsor_Name"])\
+            .eq("Company_Name", receipt.data["Company_Name"])\
+            .execute()
+
+        # Update receipt with refund status
+        supabase.table("Receipt").delete().eq("Transaction_Id", transaction_id).execute()
+
+        return RedirectResponse(url="/", status_code=303)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/A_register",response_class=HTMLResponse)
+async def get_register_form(request: Request):
+    try:
+        return templates.TemplateResponse(
+            "A_register.html",
+            {"request": request}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

@@ -1,76 +1,109 @@
 {% extends "layout.html" %}
 
-{% block title %} 
-Sponsor Refund 
-{%endblock%}
-
-{% block style %}
+{% block title %}
+Sponsor Refund
 {% endblock %}
 
 {% block main %}
-<nav class="bg-green-800">
-    <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-      <div class="relative flex h-16 items-center justify-between">
-        <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
-          <button type="button" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
-            <svg class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-          <div class="flex flex-shrink-0 items-center">
-            <img class="h-8 w-auto" src="/static/event.png" alt="Your Company">
-          </div>
-          <div class="hidden sm:ml-6 sm:block">
-            <div class="flex space-x-4">
-              <a href="/S_register" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Sponsor Registration</a>
-              <a href="/S_Fund" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Sponsor Fund</a>
-              <a href="/S_Refund" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Sponsor Refund</a>
-              <a href="/Ticket" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Tickets</a>
-              <a href="/A_register" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Attendee Registration</a>
-              <a href="/O_home" class="absolute right-0 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Organizer Access</a>
+{% include "nav1.html" %}
+<section class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="relative w-full max-w-lg">
+        <!-- Card container -->
+        <div class="relative">
+            <!-- Decorative elements -->
+            <div class="absolute -inset-2">
+                <div class="w-full h-full mx-auto rotate-180 opacity-30 blur-lg filter" style="background: linear-gradient(90deg, #44ff9a -0.55%, #44b0ff 22.86%, #8b44ff 48.36%, #ff6644 73.33%, #ebff70 99.34%)"></div>
             </div>
-          </div>
+
+            <!-- Main form card -->
+            <div class="relative bg-white shadow-xl rounded-2xl p-8">
+                <!-- Header -->
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Sponsor Refund</h1>
+                    <p class="mt-2 text-gray-600">Enter transaction details for refund</p>
+                </div>
+
+                <!-- Error message -->
+                {% if error %}
+                <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm">{{ error }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Form -->
+                <form action="/S_Refund" method="post" class="space-y-6">
+                    <!-- Transaction ID -->
+                    <div class="space-y-1">
+                        <label for="transaction_id" class="block text-sm font-medium text-gray-700">Transaction ID</label>
+                        <input type="text" name="transaction_id" id="transaction_id" required
+                            class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            value="{{ values.transaction_id if values else '' }}" />
+                    </div>
+
+                    <!-- Sponsor Name -->
+                    <div class="space-y-1">
+                        <label for="sponsor_name" class="block text-sm font-medium text-gray-700">Sponsor Name</label>
+                        <input type="text" name="sponsor_name" id="sponsor_name" required
+                            class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            value="{{ values.sponsor_name if values else '' }}" />
+                    </div>
+
+                    <!-- Company Name -->
+                    <div class="space-y-1">
+                        <label for="company_name" class="block text-sm font-medium text-gray-700">Company Name</label>
+                        <input type="text" name="company_name" id="company_name" required
+                            class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            value="{{ values.company_name if values else '' }}" />
+                    </div>
+
+                    <!-- Amount -->
+                    <div class="space-y-1">
+                        <label for="amount" class="block text-sm font-medium text-gray-700">Amount</label>
+                        <div class="relative rounded-lg shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">$</span>
+                            </div>
+                            <input type="number" name="amount" id="amount" step="0.01" required
+                                class="block w-full pl-7 px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                value="{{ values.amount if values else '' }}" />
+                        </div>
+                    </div>
+
+                    <!-- Bank Name -->
+                    <div class="space-y-1">
+                        <label for="bank_name" class="block text-sm font-medium text-gray-700">Bank Name</label>
+                        <input type="text" name="bank_name" id="bank_name" required
+                            class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            value="{{ values.bank_name if values else '' }}" />
+                    </div>
+
+                    <!-- Transaction Date -->
+                    <div class="space-y-1">
+                        <label for="transaction_date" class="block text-sm font-medium text-gray-700">Transaction Date</label>
+                        <input type="date" name="transaction_date" id="transaction_date" required
+                            class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            value="{{ values.transaction_date if values else '' }}" />
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="pt-4">
+                        <button type="submit"
+                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                            Verify & Proceed
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-      </div>
     </div>
-</nav>
-<section class="relative min-h-screen flex flex-col justify-center bg-slate-50 overflow-hidden">
-  <div class="relative mx-auto w-full max-w-md bg-white px-6 pt-10 pb-8 shadow-xl ring-1 ring-gray-900/5 sm:rounded-xl sm:px-10">
-  <div class="w-full">
-      <div class="text-center">
-          <h1 class="text-3xl font-semibold text-gray-900">Sponsor Registration</h1>
-          <p class="mt-2 text-gray-500">Fill all the details</p>
-      </div>
-      <div class="mt-5">
-          <form action="/S_Refund" method="post">
-              <div class="relative mt-6">
-                  <h1>Name</h1>
-                  <input type="text" name="name" id="name" class="peer mt-1 w-full border-b-2 border-gray-300 px-0 py-1 placeholder:text-transparent focus:border-gray-500 focus:outline-none" autocomplete="NA" />
-              </div>
-              <div class="relative mt-6">
-                  <h1>Refund</h1>
-                  <input type="number" name="fund" id="fund" class="peer peer mt-1 w-full border-b-2 border-gray-300 px-0 py-1 placeholder:text-transparent focus:border-gray-500 focus:outline-none" />
-              </div>
-              <div class="relative mt-6">
-                  <h1>Company Name</h1>
-                  <input type="text" name="c_name" id="c_name" class="peer mt-1 w-full border-b-2 border-gray-300 px-0 py-1 placeholder:text-transparent focus:border-gray-500 focus:outline-none" autocomplete="NA" />
-              </div>
-              <div class="relative mt-6">
-                <h1>Events Available:-</h1>
-                <select name="event" id="event" class="peer mt-1 w-full border-b-2 border-gray-300 px-0 py-1 placeholder:text-transparent focus:border-gray-500 focus:outline-none" autocomplete="NA" >
-                  {% for option in options %}
-                      <option value="{{ option[0] }}">Name:-{{ option[1] }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-              <div class="my-6">
-                  <button type = "submit" id = "submitBtn" class="w-full rounded-md bg-black px-3 py-4 text-white focus:bg-gray-600 focus:outline-none">Sign in</button>
-              </div>
-          </form>
-      </div>
-  </div>
-</div>
 </section>
 {% endblock %}

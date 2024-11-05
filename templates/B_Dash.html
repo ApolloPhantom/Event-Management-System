@@ -315,69 +315,72 @@ block style %}
           <!-- Table View -->
           <div id="tableView" class="view-content">
             <div class="overflow-x-auto custom-scrollbar">
-              <table id="budget-table" class="custom-table min-w-full">
-                <thead>
-                  <tr>
-                    <th
-                      class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                    >
-                      Budget ID
-                    </th>
-                    <th
-                      class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                    >
-                      Event Name
-                    </th>
-                    <th
-                      class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                    >
-                      Amount
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  {% for row in budget_data %}
-                  <tr class="hover:bg-gray-50 transition-colors duration-200">
-                    <td class="px-4 py-3 text-sm text-gray-900">
-                      {{ row['B_Id'] }}
-                    </td>
-                    <td class="px-4 py-3 text-sm text-gray-900">
-                      {{ row['EventName'] }}
-                    </td>
-                    <td class="px-4 py-3 text-sm text-gray-900">
-                      ${{ "{:,.2f}".format(row['Amount']) }}
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+                <table id="budget-table" class="custom-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                Event Name
+                            </th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                Budget Amount
+                            </th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                Sponsor Funded
+                            </th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                Total Amount
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for row in budget_data %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <td class="px-4 py-3 text-sm text-gray-900">
+                                {{ row['EventName'] }}
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-900">
+                                ${{ "{:,.2f}".format(row['Amount']) }}
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-900">
+                                ${{ "{:,.2f}".format(row['SponsorFundedAmount']) }}
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-900 font-semibold">
+                                ${{ "{:,.2f}".format(row['TotalAmount']) }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
           </div>
 
           <!-- Card View -->
           <div id="cardView" class="view-content hidden">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {% for row in budget_data %}
-              <div
-                class="bg-gray-50 rounded-lg p-4 hover:shadow-md transition-shadow"
-              >
-                <div class="flex justify-between items-start">
-                  <div>
-                    <h3 class="text-lg font-semibold text-gray-900">
-                      {{ row['EventName'] }}
-                    </h3>
-                    <p class="text-sm text-gray-600">
-                      Budget ID: {{ row['B_Id'] }}
-                    </p>
-                  </div>
-                  <p class="text-lg font-bold text-indigo-600">
-                    ${{ "{:,.2f}".format(row['Amount']) }}
-                  </p>
+                {% for row in budget_data %}
+                <div class="bg-gray-50 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex flex-col">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                            {{ row['EventName'] }}
+                        </h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="text-sm text-gray-600">
+                                <span class="font-medium">Budget:</span>
+                                <span class="text-indigo-600">${{ "{:,.2f}".format(row['Amount']) }}</span>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <span class="font-medium">Sponsored:</span>
+                                <span class="text-green-600">${{ "{:,.2f}".format(row['SponsorFundedAmount']) }}</span>
+                            </div>
+                        </div>
+                        <div class="mt-2 pt-2 border-t border-gray-200">
+                            <span class="font-semibold text-gray-900">Total:</span>
+                            <span class="font-bold text-lg text-indigo-600">${{ "{:,.2f}".format(row['TotalAmount']) }}</span>
+                        </div>
+                    </div>
                 </div>
-              </div>
-              {% endfor %}
+                {% endfor %}
             </div>
-          </div>
         </div>
 
         <!-- Charts Section -->

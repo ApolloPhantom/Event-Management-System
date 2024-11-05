@@ -1,0 +1,183 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Attendee Registration
+{% endblock %}
+
+{% block style %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.5/cdn.js"></script>
+{% endblock %}
+
+{% block main %}
+{% include "nav1.html" %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-3xl mx-auto px-4">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">Attendee Registration</h1>
+            
+            <form class="space-y-6">
+                <!-- Visitor Information Section -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Visitor Information</h2>
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Name</label>
+                            <input type="text" name="name" required 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+                            <input type="tel" name="phone" required 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" name="email" required 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Specialization</label>
+                            <input type="text" name="specialization" value="Visitor" readonly
+                                class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event Selection Section -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Event Selection</h2>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Event</label>
+                            <select name="e_id" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Select Event</option>
+                                {% for event in events %}
+                                <option value="{{ event['E_Id'] }}' }}">{{ event['Name']  }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Event Schedule</label>
+                            <select name="es_id" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Select Schedule</option>
+                                {% for schedule in schedules %}
+                                <option value="{{ schedule['ES_Id'] }}" data-schedule='{"E_Id": {{ schedule['E_Id'] }}}'>
+                                    {{ schedule['Programme_Name'] }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Section -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Payment Details</h2>
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Bank ID</label>
+                            <input type="number" name="bank_id" required 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">PIN</label>
+                            <input type="password" name="pin" required maxlength="4"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-end">
+                    <button type="submit" 
+                        class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Register & Pay
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Dynamic Schedule Selection Logic
+        const eventSelect = document.querySelector('select[name="e_id"]');
+        const scheduleSelect = document.querySelector('select[name="es_id"]');
+        const allSchedules = [...scheduleSelect.options].slice(1); // Save all schedules except the placeholder
+        
+        // Clear and disable schedule select initially
+        scheduleSelect.innerHTML = '<option value="">Select Schedule</option>';
+        scheduleSelect.disabled = true;
+    
+        eventSelect.addEventListener('change', function() {
+            const selectedEventId = this.value;
+            
+            // Reset and disable schedule select if no event is selected
+            if (!selectedEventId) {
+                scheduleSelect.innerHTML = '<option value="">Select Schedule</option>';
+                scheduleSelect.disabled = true;
+                return;
+            }
+    
+            // Enable schedule select
+            scheduleSelect.disabled = false;
+            
+            // Filter schedules for selected event
+            const filteredSchedules = allSchedules.filter(option => {
+                const schedule = JSON.parse(option.dataset.schedule || '{}');
+                return schedule.E_Id === parseInt(selectedEventId);
+            });
+    
+            // Update schedule options
+            scheduleSelect.innerHTML = '<option value="">Select Schedule</option>';
+            filteredSchedules.forEach(option => scheduleSelect.appendChild(option.cloneNode(true)));
+        });
+    
+        // Form Submission Handler
+        async function handleRegistrationSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+        
+            const registrationData = {
+                name: formData.get('name'),
+                phone: formData.get('phone'),
+                email: formData.get('email'),
+                specialization: formData.get('specialization'),
+                e_id: parseInt(formData.get('e_id')),
+                es_id: parseInt(formData.get('es_id')),
+                bank_id: parseInt(formData.get('bank_id')),
+                pin: formData.get('pin')
+            };
+        
+            try {
+                const response = await fetch('/A_register_V', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(registrationData)
+                });
+        
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail);
+                }
+        
+                const result = await response.json();
+                showSuccessModal(result);
+            } catch (error) {
+                showErrorMessage(error.message);
+            }
+        }
+        document.querySelector('form').addEventListener('submit', handleRegistrationSubmit);
+    });
+</script>
+{% endblock %}

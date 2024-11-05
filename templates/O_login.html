@@ -1,143 +1,239 @@
 {% extends "layout.html" %}
 
-{% block title %} 
-Organizer Login 
-{%endblock%}
+{% block title %}
+Organizer Login
+{% endblock %}
 
 {% block style %}
 <style>
     .input-error {
-        border: 1px solid transparent; /* Remove default border */
-        box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.5); /* Add red shadow */
-        background-color: pink;
+        border: 1px solid transparent;
+        box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.25);
+        background-color: rgba(255, 192, 192, 0.2);
+        transition: all 0.3s ease;
     }
     .input-success {
-        border: 1px solid transparent; /* Remove default border */
-        box-shadow: 0 0 0 3px green; /* Add red shadow */
-        background-color: lightgreen;
+        border: 1px solid transparent;
+        box-shadow: 0 0 0 3px rgba(0, 128, 0, 0.25);
+        background-color: rgba(144, 238, 144, 0.2);
+        transition: all 0.3s ease;
+    }
+    .input {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid #e2e8f0;
+        margin-top: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        color: #4a5568;
+    }
+    .input:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
     }
     .input::placeholder {
-        color: gray;
+        color: #a0aec0;
+    }
+    .message {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    .message.is-danger {
+        background-color: #fff5f5;
+        border: 1px solid #feb2b2;
+        color: #c53030;
+    }
+    .message.is-success {
+        background-color: #f0fff4;
+        border: 1px solid #9ae6b4;
+        color: #2f855a;
+    }
+    .btn-login {
+        width: 100%;
+        padding: 0.75rem;
+        background: linear-gradient(to right, #3182ce, #2b6cb0);
+        color: white;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-login:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .btn-login:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+    .form-label {
+        font-weight: 500;
+        color: #4a5568;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    .loading-spinner {
+        display: none;
+        width: 1.5rem;
+        height: 1.5rem;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #3182ce;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 </style>
 {% endblock %}
 
 {% block main %}
-<nav class="bg-gray-800">
-    <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-      <div class="relative flex h-16 items-center justify-between">
-        <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
-          <button type="button" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
-            <svg class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-          <div class="flex flex-shrink-0 items-center">
-            <img class="h-8 w-auto" src="/static/layers.png" alt="Your Company">
-          </div>
-          <div class="hidden sm:ml-6 sm:block">
-            <div class="flex space-x-4">
-              <a href="/O_register" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Registration</a>
-              <a href="/O_login" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Login</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </nav>
+{% include "nav4.html" %}
 <div class="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
-	<div class="relative py-3 sm:max-w-xl sm:mx-auto">
-		<div
-			class="absolute inset-0 bg-gradient-to-r from-blue-300 to-blue-600 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl">
-		</div>
-		<div class="relative px-100 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
-			<div class="max-w-md mx-auto">
-				<div>
-					<h1 class="text-2xl font-semibold">Organizer Login</h1>
-				</div>
-				<div class="divide-y divide-gray-200">
-                    <form id="registrationForm">
-					<div class="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
-						<div class="relative">
-                            <h1>Identification Number</h1>
-							<input autocomplete="off" id="id" name="id" type="text" class="input is-rounded has-text-black" />
-						</div>
-						<div class="relative">
-                            <h1>Password</h1>
-							<input autocomplete="off" id="password" name="password" type="password" class="input is-rounded has-text-black"/>
-						</div>
-						<div class="relative">
-							<button class="bg-blue-500 text-white rounded-md px-2 py-1" id="submitBtn" type="button">Login</button>
-						</div>
-					</div>
-            <article class="message" id="message" style="display: none;">
-                <div class="message-header">
-                    <p id="result1"></p>
+    <div class="relative py-3 sm:max-w-xl sm:mx-auto">
+        <div class="absolute inset-0 bg-gradient-to-r from-blue-300 to-blue-600 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl">
+        </div>
+        <div class="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
+            <div class="max-w-md mx-auto">
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900">Organizer Login</h1>
+                    <p class="mt-2 text-gray-600">Please enter your credentials to continue</p>
                 </div>
-                <div class="message-body">
-                    <h1 id="result"></h1>
+                <div class="divide-y divide-gray-200">
+                    <form id="registrationForm" class="space-y-6">
+                        <div>
+                            <label for="id" class="form-label">Identification Number</label>
+                            <input 
+                                autocomplete="off" 
+                                id="id" 
+                                name="id" 
+                                type="text" 
+                                class="input"
+                                placeholder="Enter your ID number"
+                            />
+                        </div>
+                        <div>
+                            <label for="password" class="form-label">Password</label>
+                            <input 
+                                autocomplete="off" 
+                                id="password" 
+                                name="password" 
+                                type="password" 
+                                class="input"
+                                placeholder="Enter your password"
+                            />
+                        </div>
+                        <div class="pt-4">
+                            <button type="button" id="submitBtn" class="btn-login">
+                                <span class="button-text">Login</span>
+                                <div class="loading-spinner" id="spinner"></div>
+                            </button>
+                        </div>
+                    </form>
+                    <div class="message" id="message" style="display: none;">
+                        <h3 class="font-semibold" id="result1"></h3>
+                        <p class="mt-1" id="result"></p>
+                    </div>
                 </div>
-            </article>
-            </form>
-				</div>
-			</div>
-		</div>
-	</div>
+            </div>
+        </div>
+    </div>
 </div>
+
 <script>
-    document.getElementById('submitBtn').addEventListener('click', function() {
-        let id = document.getElementById('id').value;
-        let password = document.getElementById('password').value;
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('registrationForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const spinner = document.getElementById('spinner');
+        const message = document.getElementById('message');
+        const buttonText = document.querySelector('.button-text');
+        
+        // Input validation on typing
+        ['id', 'password'].forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            field.addEventListener('input', function() {
+                this.classList.remove('input-error', 'input-success');
+                message.style.display = 'none';
+            });
+        });
 
-        // Check if any field is empty
-        if (id === '' || password === '') {
-            // Add is-warning class to empty fields
-            document.getElementById('id').classList.toggle('input-error', id === '');
-            document.getElementById('password').classList.toggle('input-error', password === '');
-            document.getElementById('result').innerText = "Input Fields are empty";
-            document.getElementById('result1').innerText = "Error";
-            document.getElementById('message').classList.toggle('is-danger',id==='');
-            document.getElementById('message').classList.toggle('is-danger',password==='');
-            document.getElementById('message').style.display = 'block';
-            return; // Do not proceed if any field is empty
+        submitBtn.addEventListener('click', async function() {
+            const id = document.getElementById('id');
+            const password = document.getElementById('password');
+            let hasError = false;
+
+            // Reset previous states
+            [id, password].forEach(field => {
+                field.classList.remove('input-error', 'input-success');
+            });
+
+            // Validation
+            if (!id.value.trim()) {
+                id.classList.add('input-error');
+                hasError = true;
+            }
+            if (!password.value.trim()) {
+                password.classList.add('input-error');
+                hasError = true;
+            }
+
+            if (hasError) {
+                showMessage('Error', 'Please fill in all required fields', false);
+                return;
+            }
+
+            // Show loading state
+            submitBtn.disabled = true;
+            buttonText.style.display = 'none';
+            spinner.style.display = 'block';
+
+            try {
+                const formData = new FormData();
+                formData.append('id', id.value.trim());
+                formData.append('password', password.value);
+
+                const response = await fetch('/O_login', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.text();
+
+                if (data === 'Success') {
+                    showMessage('Success', 'Login successful. Redirecting to dashboard...', true);
+                    [id, password].forEach(field => field.classList.add('input-success'));
+                    setTimeout(() => {
+                        window.location.href = "/O_home";
+                    }, 2000);
+                } else {
+                    showMessage('Error', 'Invalid ID or password. Please try again.', false);
+                    [id, password].forEach(field => field.classList.add('input-error'));
+                }
+            } catch (error) {
+                showMessage('Error', 'An unexpected error occurred. Please try again.', false);
+                console.error('Error:', error);
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                buttonText.style.display = 'block';
+                spinner.style.display = 'none';
+            }
+        });
+
+        function showMessage(title, text, isSuccess) {
+            const message = document.getElementById('message');
+            const result1 = document.getElementById('result1');
+            const result = document.getElementById('result');
+
+            message.className = 'message ' + (isSuccess ? 'is-success' : 'is-danger');
+            result1.textContent = title;
+            result.textContent = text;
+            message.style.display = 'block';
         }
-
-        // If all fields are filled, send data to Flask backend
-        let formData = new FormData();
-        formData.append('id', id);
-        formData.append('password', password);
-
-        fetch('/O_login', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.text())
-        .then(data => {
-          if(data!==''){
-            document.getElementById('id').classList.toggle('input-success', data !== '');
-            document.getElementById('password').classList.toggle('input-success', data !== '');
-            document.getElementById('result').innerText = `Login Successful. You will redirected to Dash in 5s`;
-            document.getElementById('message').style.display = 'block';
-            document.getElementById('result1').innerText = "Success";
-            document.getElementById('message').classList.add("is-success");
-            document.getElementById('message').classList.remove("is-danger");
-            setTimeout(function(){
-                window.location.href = "/O_home";
-            },5000);
-          }
-          else{
-            document.getElementById('id').classList.toggle('input-error', data === '');
-            document.getElementById('password').classList.toggle('input-error', data === '');
-            document.getElementById('result').innerText = "Error";
-            document.getElementById('message').style.display = 'block';
-            document.getElementById('result1').innerText = "Error, ID is wrong or password doesnot match.";
-            document.getElementById('message').classList.add("is-danger");
-            document.getElementById('message').classList.remove("is-success");
-          }
-        })
-        .catch(error => console.error('Error:', error));
     });
 </script>
 {% endblock %}
