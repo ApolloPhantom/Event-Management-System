@@ -529,19 +529,19 @@ async def o_login_post(
             .execute()
 
         if not response.data:
-            return "Error"
+            return 0
 
         organizer = response.data[0]
         request.session["o_id"] = organizer["O_Id"]
         request.session["name"] = organizer["Name"]
-        return "Success"
+        return 1
 
     except ValueError as ve:
         print("Validation Error:", str(ve))
-        return "Error"
+        return 0
     except Exception as e:
         print("Error:", type(e).__name__, str(e))
-        return "Error"
+        return 0
 
 @app.get("/O_logout")
 @o_login_required
@@ -869,8 +869,6 @@ async def process_payment(
 
         # Begin transaction
         transaction_id = f"TXN{datetime.now().strftime('%Y%m%d')}{random.randint(1000, 9999)}"
-        
-        # Update bank balance
         new_balance = bank["Total_Amount"] - sponsor_data["Fund"]
         supabase.table("Bank").update({"Total_Amount": new_balance}).eq("Bank_Id", b_id).execute()
         

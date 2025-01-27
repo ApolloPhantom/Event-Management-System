@@ -201,9 +201,15 @@ Organizer Login
                     body: formData
                 });
 
-                const data = await response.text();
-
-                if (data === 'Success') {
+                let data = await response.text();
+                data = parseInt(data);
+                console.log(data);
+                console.log(parseInt(data));
+                console.log(typeof data);
+                console.log(typeof parseInt(data));
+                console.log(typeof 1);
+                console.log(data=== 1);
+                if (data === 1) {
                     showMessage('Success', 'Login successful. Redirecting to dashboard...', true);
                     [id, password].forEach(field => field.classList.add('input-success'));
                     setTimeout(() => {
