@@ -46,15 +46,12 @@ app.add_middleware(
     max_age=None  # Session will last until browser closes
 )
 
-# supabase: Client = create_client(
-#     os.getenv("SUPABASE_URL"),
-#     os.getenv("SUPABASE_KEY")
-# )
-
 supabase: Client = create_client(
-    "https://mfpblhjctozquhebtuiy.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mcGJsaGpjdG96cXVoZWJ0dWl5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyOTU1OTY0NCwiZXhwIjoyMDQ1MTM1NjQ0fQ.3Hkko-Pq7ksBbv7Qa7q-0UrOAeJAuNMNChKqBO2l7sk"
+    os.getenv("SUPABASE_URL"),
+    os.getenv("SUPABASE_KEY")
 )
+
+
 
 security = HTTPBearer()
 
